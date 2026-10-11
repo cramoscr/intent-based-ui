@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Intent-Based-UI · Mi Taller",
+  "short_name": "Mi Taller",
+  "description": "IBUI-001 · Experiencia móvil de intenciones",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#242424",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
