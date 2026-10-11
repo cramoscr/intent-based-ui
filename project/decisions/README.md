@@ -17,3 +17,9 @@ The starting point is user intent, expressed via text, voice, or visual controls
 **Status:** Accepted.
 
 Cirios-App is the first real-world testbed. Prototype work should be isolated from FAB-011 and production. A branch name `experiment/intent-based-ui` is proposed, not yet created or verified.
+
+## ADR-001 — Visual consistency and theme independence
+
+**Status:** Accepted. [Read the full ADR](ADR-001-visual-consistency-and-theme-independence.md).
+
+Use Cirios-App's verified typography and visual styling as the initial reference while keeping IBUI's interaction model and themes independent.
