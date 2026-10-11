@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "ibui",
     "public": "dist",
     "ignore": [
       "firebase.json",
