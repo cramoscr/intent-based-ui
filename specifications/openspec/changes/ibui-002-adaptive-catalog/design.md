@@ -32,3 +32,12 @@ No cart, product editing, checkout, backend redesign, or production deployment i
 - Begin with image-free, typography-first cards, or separately approve a minimal API contract extension for image URLs after reviewing image hosting/security.
 - Use only fields actually returned by the API; do not invent comparison attributes.
 - Do not loosen IAM or embed service-account credentials in browser code.
+
+## Decision — text-first cards with future image slot (2026-10-11)
+
+- Defer adding image fields to `catalogApi`. Do not change the API contract in IBUI-002.
+- Render catalog product name, category and price using real API fields when integration is available.
+- Reserve a fixed image slot in product cards and show a local dummy/placeholder visual for now; label it as a placeholder rather than a real product photo.
+- Keep the card component ready to accept an optional future `imageUrl` without layout redesign. Avoid assuming the current API returns that field.
+- Do not use fabricated product records/prices as if they were live data.
+- Actual source code for the deployed IBUI-001 application has not yet been located in this repository; verify it before implementation.
