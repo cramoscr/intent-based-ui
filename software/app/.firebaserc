@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "fabricamelo-lab"
+  },
+  "targets": {
+    "fabricamelo-lab": {
+      "hosting": {
+        "ibui": [
+          "fabriquemelo-app"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

@@ -23,3 +23,9 @@ Cirios-App is the first real-world testbed. Prototype work should be isolated fr
 **Status:** Accepted. [Read the full ADR](ADR-001-visual-consistency-and-theme-independence.md).
 
 Use Cirios-App's verified typography and visual styling as the initial reference while keeping IBUI's interaction model and themes independent.
+
+## ADR-0002 — Cloud CLI and Workload Identity boundary
+
+**Status:** Accepted. [Read the full ADR](ADR-0002-cloud-cli-and-workload-identity-boundary.md).
+
+Allow `gcloud` for infrastructure administration, while requiring Workload Identity Federation for GitHub Actions and explicitly scoped Firebase Hosting deployment. No personal or persistent service-account credentials in CI/CD.
