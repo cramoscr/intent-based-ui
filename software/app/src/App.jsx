@@ -13,7 +13,8 @@ function classify(text) {
   if (/pedido|agregar al/.test(q) && !/catalogo|productos/.test(q)) return { mode:'future', query:'' };
   if (/comparar|compara|comparacion/.test(q)) return { mode:'compare', query:q };
   if (/^(busca|buscar|encuentra)/.test(q)) return { mode:'detail', query:q.replace(/^(busca|buscar|encuentra)(me)?\s+(el |la |un |una )?/, '') };
-  if (/catalogo|todos los productos|lista|listado/.test(q)) return { mode:'list', query:'' };
+  if (/lista|listado/.test(q)) return { mode:'list', query:'' };
+  if (/catalogo|todos los productos/.test(q)) return { mode:'cards', query:'' };
   return { mode:'cards', query:q };
 }
 function filterProducts(products, query) {
