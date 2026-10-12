@@ -1,0 +1,49 @@
+name: IBUI Firebase Hosting CD
+
+on:
+  push:
+    branches:
+      - feature/ibui-001-react-mui
+    paths:
+      - .github/trigger-ci-cd
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: ibui-hosting-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: software/app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: software/app
+        run: npm ci
+
+      - name: Build
+        working-directory: software/app
+        run: npm run build
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: fabricamelo-lab
+          workload_identity_provider: ${{ vars.IBUI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.IBUI_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Deploy only IBUI Hosting target
+        working-directory: software/app
+        run: npx --yes firebase-tools deploy --only hosting:ibui --project fabricamelo-lab --non-interactive
