@@ -22,8 +22,13 @@ function filterProducts(products, query) {
   return terms.length ? products.filter(p => terms.every(word => normalize(p.name).includes(word))) : products;
 }
 function ProductCard({product}) {
+  const [imageFailed,setImageFailed]=useState(false);
   return <Box sx={{bgcolor:'#303030',border:'1px solid #444',borderRadius:3,overflow:'hidden'}}>
-    <Box sx={{height:132,bgcolor:'#393939',display:'grid',placeItems:'center',color:'#aaa',fontSize:12}} aria-label="Espacio reservado para imagen">Imagen próximamente</Box>
+    <Box sx={{height:132,bgcolor:'#393939',display:'grid',placeItems:'center',color:'#aaa',fontSize:12,overflow:'hidden'}}>
+      {product.imageurl && !imageFailed
+        ? <Box component="img" src={product.imageurl} alt={product.name} loading="lazy" onError={()=>setImageFailed(true)} sx={{width:'100%',height:'100%',objectFit:'contain'}}/>
+        : 'Sin imagen'}
+    </Box>
     <Box sx={{p:2}}><Typography sx={{fontWeight:600}}>{product.name}</Typography><Typography sx={{mt:1,color:'#ddd'}}>{money(product.price)}</Typography></Box>
   </Box>;
 }
@@ -44,7 +49,7 @@ export default function App() {
       if(!response.ok) throw new Error(response.status===401 || response.status===403 ? 'El catálogo requiere autorización.' : 'No se pudo consultar el catálogo.');
       const json=await response.json();
       if(!Array.isArray(json.products)) throw new Error('Formato de catálogo inesperado.');
-      const products=json.products.filter(p=>p && typeof p.name==='string').map((p,i)=>({id:p.id || i,name:p.name,price:p.price}));
+      const products=json.products.filter(p=>p && typeof p.name==='string').map((p,i)=>({id:p.id || i,name:p.name,price:p.price,imageurl:typeof p.imageurl==='string' && /^https:\/\//i.test(p.imageurl) ? p.imageurl : null}));
       setResult({mode,products:filterProducts(products,query)});
     } catch(e) {setResult({mode:'error',message:e.message || 'No se pudo consultar el catálogo.'});}
     finally {setBusy(false);}
