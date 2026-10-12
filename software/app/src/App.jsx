@@ -38,19 +38,60 @@ export default function App() {
   const [result,setResult]=useState(null);
   const [busy,setBusy]=useState(false);
   const [conversation,setConversation]=useState(null);
+  const [catalog,setCatalog]=useState([]);
+  const [loginEmail,setLoginEmail]=useState('');
+  const [loginPassword,setLoginPassword]=useState('');
+  const [checkoutToken,setCheckoutToken]=useState(null);
+  const [checkoutError,setCheckoutError]=useState('');
   const reducedMotion=useMediaQuery('(prefers-reduced-motion: reduce)');
   async function run(value) {
     setIntent(value);
+    if(busy)return;
     if(conversation){
-      setConversation(previous=>({...previous,messages:[...previous.messages,{from:'user',text:value},{from:'assistant',text:'Estamos preparando la conexión segura con el motor de pedidos. Todavía no se ha registrado ningún pedido.'}]}));
+      const text=value.trim();
+      if(!text)return;
+      const previous=conversation;
+      const messages=[...previous.messages,{from:'user',text}];
+      const reply=(next,message)=>setConversation({...next,messages:[...messages,{from:'assistant',text:message}]});
+      if(normalize(text)==='cancelar pedido'){setConversation(null);setIntent('');return;}
+      if(previous.step==='customer'){
+        reply({...previous,step:'product',customer:text},'¿Qué producto deseas agregar?');
+      } else if(previous.step==='product'){
+        const found=catalog.filter(p=>normalize(p.name).includes(normalize(text)));
+        if(found.length===1)reply({...previous,step:'quantity',pending:found[0]},'¿Cuántas unidades de '+found[0].name+'?');
+        else reply(previous,found.length?'Encontré varios productos. Escribe un nombre más específico: '+found.slice(0,5).map(p=>p.name).join(', '):'No encontré ese producto en el catálogo. Prueba con otro nombre.');
+      } else if(previous.step==='quantity'){
+        const qty=Number(text);
+        if(!Number.isInteger(qty)||qty<1||qty>9999)reply(previous,'Indica una cantidad entera entre 1 y 9999.');
+        else reply({...previous,step:'another',pending:null,items:[...previous.items,{...previous.pending,quantity:qty}]},'Producto agregado al carrito. ¿Deseas agregar otro producto? (sí/no)');
+      } else if(previous.step==='another'){
+        if(['si','sí'].includes(normalize(text)))reply({...previous,step:'product'},'¿Qué producto deseas agregar?');
+        else if(normalize(text)==='no')reply({...previous,step:'date'},'¿Cuál es la fecha estimada de entrega? Escribe AAAA-MM-DD o «sin fecha».');
+        else reply(previous,'Responde sí o no.');
+      } else if(previous.step==='date'){
+        const date=normalize(text)==='sin fecha'?null:text;
+        const valid=date===null||(/^\d{4}-\d{2}-\d{2}$/.test(date)&&!Number.isNaN(Date.parse(date))&&new Date(date).toISOString().slice(0,10)===date);
+        if(!valid)reply(previous,'Indica una fecha válida AAAA-MM-DD o «sin fecha».');
+        else reply({...previous,step:'checkout',committedDate:date},'Carrito listo. Revisa el resumen e inicia sesión para confirmar el pedido.');
+      } else {
+        reply(previous,'Usa el botón Confirmar pedido después de iniciar sesión, o escribe «cancelar pedido».');
+      }
       setIntent('');
       return;
     }
     const {mode,query}=classify(value);
     if(mode==='home'){setResult(null);return;}
     if(mode==='future'){
-      setConversation({step:'customer',messages:[{from:'user',text:value},{from:'assistant',text:'¿Para quién es el pedido?'}]});
-      setResult(null);
+      setBusy(true);
+      try {
+        const response=await fetch(import.meta.env.VITE_CATALOG_API_URL || 'https://us-central1-cirios-app.cloudfunctions.net/publicCatalogApi');
+        if(!response.ok)throw new Error('No se pudo consultar el catálogo real.');
+        const data=await response.json();
+        if(!Array.isArray(data.products))throw new Error('Formato de catálogo inesperado.');
+        setCatalog(data.products.filter(p=>p && p.id && typeof p.name==='string').map(p=>({id:p.id,name:p.name,price:p.price})));
+        setConversation({step:'customer',customer:'',items:[],pending:null,committedDate:null,messages:[{from:'user',text:value},{from:'assistant',text:'¿Para quién es el pedido?'}]});
+      }catch(e){setResult({mode:'error',message:e.message});}
+      finally{setBusy(false);}
       setIntent('');
       return;
     }
@@ -66,13 +107,32 @@ export default function App() {
     } catch(e) {setResult({mode:'error',message:e.message || 'No se pudo consultar el catálogo.'});}
     finally {setBusy(false);}
   }
+  async function checkout(){
+    if(!conversation||conversation.step!=='checkout'||!conversation.items.length||busy)return;
+    setBusy(true);setCheckoutError('');
+    try{
+      let token=checkoutToken;
+      if(!token){
+        if(!loginEmail.trim()||!loginPassword)throw new Error('Introduce el correo y contraseña de tu cuenta de Cirios-App.');
+        const auth=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBXv0te6qOQY3Itnmy3a0FSN71kZN2nWeY',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:loginEmail.trim(),password:loginPassword,returnSecureToken:true})});
+        const data=await auth.json();
+        if(!auth.ok||!data.idToken)throw new Error('No se pudo iniciar sesión. Comprueba tus credenciales.');
+        token=data.idToken;setCheckoutToken(token);setLoginPassword('');
+      }
+      const response=await fetch('https://us-central1-cirios-app.cloudfunctions.net/ibuiCheckoutApi',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({customer:conversation.customer,committedDate:conversation.committedDate,items:conversation.items.map(x=>({productId:x.id,quantity:x.quantity}))})});
+      const data=await response.json();
+      if(!response.ok){if(response.status===401)setCheckoutToken(null);throw new Error(data.error||'No se pudo registrar el pedido.');}
+      setConversation(previous=>({...previous,step:'complete',messages:[...previous.messages,{from:'assistant',text:'Pedido registrado correctamente. Número: '+data.orderId}]}));
+    }catch(e){setCheckoutError(e.message||'Error al registrar pedido. El carrito se conserva.');}
+    finally{setBusy(false);}
+  }
   const showing=Boolean(result || conversation);
   return <Box sx={{minHeight:'100dvh',bgcolor:'#111',display:'grid',placeItems:'center',p:{xs:0,sm:2}}}>
     <Box sx={{width:'100%',maxWidth:720,minHeight:{xs:'100dvh',sm:'min(84dvh,760px)'},bgcolor:'#242424',borderRadius:{xs:0,sm:'36px'},px:{xs:2.5,sm:4},py:{xs:3.5,sm:4},display:'flex',flexDirection:'column'}}>
       <Box component="header" sx={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><Typography sx={{fontSize:{xs:22,sm:28},fontWeight:650,letterSpacing:'-.04em',cursor:'pointer'}} onClick={()=>{setResult(null);setConversation(null);setIntent('');}}>Mi Taller</Typography><IconButton disabled aria-label="Menú no disponible"><MenuRoundedIcon/></IconButton></Box>
       <Box component="main" sx={{flex:1,display:'flex',flexDirection:'column',justifyContent:showing?'flex-start':'center',gap:3,pb:'5vh',pt:showing?4:0}}>
         <Typography component="h1" sx={{fontSize:{xs:showing?27:32,sm:showing?34:44},fontWeight:650,textAlign:showing?'left':'center',letterSpacing:'-.045em',lineHeight:1.15}}>{conversation?'Crear pedido':showing?'Tu catálogo':'¿Qué quieres hacer?'}</Typography>
-        {conversation && <Box aria-live="polite" sx={{display:'grid',gap:1.5}}>{conversation.messages.map((message,index)=><Box key={index} sx={{justifySelf:message.from==='user'?'end':'start',bgcolor:message.from==='user'?'#3c3c3c':'#303030',px:2,py:1.5,borderRadius:3,maxWidth:'90%'}}><Typography>{message.text}</Typography></Box>)}<Typography color="text.secondary" sx={{fontSize:12}}>Vista preliminar · sin conexión al servicio de pedidos</Typography></Box>}
+        {conversation && <Box aria-live="polite" sx={{display:'grid',gap:1.5}}>{conversation.messages.map((message,index)=><Box key={index} sx={{justifySelf:message.from==='user'?'end':'start',bgcolor:message.from==='user'?'#3c3c3c':'#303030',px:2,py:1.5,borderRadius:3,maxWidth:'90%'}}><Typography>{message.text}</Typography></Box>)}<Box sx={{bgcolor:'#303030',p:2,borderRadius:2,display:'grid',gap:1}}><Typography fontWeight={600}>Carrito temporal · {conversation.items.length} producto(s)</Typography>{conversation.items.map((item,index)=><Typography key={index} sx={{fontSize:14}}>{item.quantity} × {item.name} — {money(Number(item.price||0)*item.quantity)}</Typography>)}{conversation.items.length>0&&<Typography fontWeight={600}>Total estimado: {money(conversation.items.reduce((sum,item)=>sum+Number(item.price||0)*item.quantity,0))}</Typography>}<Typography color="text.secondary" sx={{fontSize:12}}>{conversation.step==='complete'?'Pedido registrado':'Carrito temporal · se pierde al recargar'}</Typography>{conversation.step==='checkout'&&<Box sx={{display:'grid',gap:1.5,mt:1}}>{!checkoutToken&&<><TextField label="Correo de Cirios-App" type="email" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/><TextField label="Contraseña" type="password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/></>}{checkoutError&&<Alert severity="error">{checkoutError}</Alert>}<Button variant="contained" disabled={busy} onClick={()=>void checkout()}>Confirmar pedido (checkout)</Button><Typography color="text.secondary" sx={{fontSize:12}}>Solo usuarios administradores autorizados. El pedido se guarda únicamente al confirmar.</Typography></Box>}</Box></Box>}
         {busy && <Box sx={{display:'flex',justifyContent:'center'}}><CircularProgress size={28}/></Box>}
         {result && <Box aria-live="polite">
           {result.mode==='error'?<Alert severity="warning">{result.message}</Alert>:result.mode==='future'?<Typography color="text.secondary">Crear pedidos estará disponible próximamente.</Typography>:<>
