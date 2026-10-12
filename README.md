@@ -20,7 +20,9 @@ Start with the [vision](specifications/VISION.md) and [roadmap](project/roadmap/
 
 [Cirios-App](https://github.com/cramoscr/cirios-app), an artisan workshop and store, is the first testbed. The initial journeys are **create an order** (Taller) and **find a product** (Tienda). [Fabrícamelo](https://github.com/cramoscr/fabricamelo) is a related project.
 
-**Current status:** exploration. No generic framework or production integration is claimed.
+**Current status:** IBUI-001 and IBUI-002 delivered and user-verified in production. The intent-first frontend displays the real Cirios-App catalog, with product photographs when available and a compact list on explicit request. This remains a focused pilot, not a generic UI framework.
+
+**Live pilot:** https://fabriquemelo-app.web.app
 
 ## License
 
