@@ -17,3 +17,12 @@ The IBUI pilot needs to display real catalog products without introducing tradit
 
 ## Status
 Approved concept; implementation pending source/API inspection.
+
+## Approved UX scope — 2026-10-11
+
+- **Initial home:** minimal intent entry with suggestion bubbles/chips, not product cards.
+- **Catalog response:** after a catalog request, keep the request visible, show a brief contextual result message, and render product cards (for exploratory/category queries).
+- **Card fields:** product name, category and price from the existing text-only catalog response; a fixed dummy image placeholder prepares the layout for future photographs. Dimensions are optional and must not be fabricated.
+- **Conversational continuity:** keep the next-intent input available below the results; do not switch to a traditional catalog screen.
+- **Deferred:** extending `catalogApi` with image URLs. No catalog API changes in this milestone.
+- **Visual reference:** user-provided dark, minimal mobile mockup showing two Pascual candle cards, search/request at the top and conversational input below. It is a design reference, not real product data.
