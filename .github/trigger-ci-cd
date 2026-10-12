@@ -1,6 +1,6 @@
 IBUI production deployment trigger
 Authorized by user: publica en produccion
 Date: 2026-10-12
-Deployment: IBUI-002 real catalog product images
-Source commit: dad7a5b7bfec5360f216a0cc9f4b998df69f5043
-Trigger revision: 3
+Deployment: IBUI-002 catalog cards default presentation
+Source commit: 4b0b784c3c95ac9c2e64a42bf244eee54f67e819
+Trigger revision: 4
