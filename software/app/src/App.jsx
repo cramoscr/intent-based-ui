@@ -5,15 +5,6 @@ import MicNoneRoundedIcon from '@mui/icons-material/MicNoneRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 
 const suggestions = ['Ver catálogo de productos', 'Crear pedido'];
-const demoProducts = [
-  { id:'demo-1', name:'Cirio pascual 10 x 80 cm', price:18500 },
-  { id:'demo-2', name:'Cirio pascual 8 x 60 cm', price:12500 },
-  { id:'demo-3', name:'Cirio de altar 7 x 30 cm', price:4800 },
-  { id:'demo-4', name:'Vela decorativa artesanal', price:3500 },
-  { id:'demo-5', name:'Cirio para bautizo', price:6500 },
-  { id:'demo-6', name:'Vela de primera comunión', price:4200 }
-];
-
 const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 const money = price => price == null || price === '' || !Number.isFinite(Number(price)) ? 'Precio no disponible' : new Intl.NumberFormat('es-CR', { style:'currency', currency:'CRC', maximumFractionDigits:0 }).format(Number(price));
 function classify(text) {
@@ -48,11 +39,7 @@ export default function App() {
     if(mode==='future'){setResult({mode});return;}
     setBusy(true);setResult(null);
     try {
-      const url=import.meta.env.VITE_CATALOG_API_URL;
-      if(!url) {
-        setResult({mode,products:filterProducts(demoProducts,query),demo:true});
-        return;
-      }
+      const url=import.meta.env.VITE_CATALOG_API_URL || 'https://us-central1-cirios-app.cloudfunctions.net/publicCatalogApi';
       const response=await fetch(url);
       if(!response.ok) throw new Error(response.status===401 || response.status===403 ? 'El catálogo requiere autorización.' : 'No se pudo consultar el catálogo.');
       const json=await response.json();
@@ -71,7 +58,6 @@ export default function App() {
         {busy && <Box sx={{display:'flex',justifyContent:'center'}}><CircularProgress size={28}/></Box>}
         {result && <Box aria-live="polite">
           {result.mode==='error'?<Alert severity="warning">{result.message}</Alert>:result.mode==='future'?<Typography color="text.secondary">Crear pedidos estará disponible próximamente.</Typography>:<>
-            {result.demo && <Alert severity="info" sx={{mb:2}}>Catálogo de demostración: productos y precios simulados.</Alert>}
             <Typography sx={{color:'#bbb',mb:2}}>{result.products.length ? `Encontré ${result.products.length} producto(s).` : 'No encontré productos para esta búsqueda.'}</Typography>
             {result.mode==='list' ? <Box sx={{display:'grid',gap:1}}>{result.products.map(p=><Box key={p.id} sx={{display:'flex',justifyContent:'space-between',gap:2,p:1.5,borderBottom:'1px solid #444'}}><Typography>{p.name}</Typography><Typography sx={{whiteSpace:'nowrap',color:'#ccc'}}>{money(p.price)}</Typography></Box>)}</Box>
             : result.mode==='compare' ? <Box sx={{overflowX:'auto'}}><Box component="table" sx={{width:'100%',borderCollapse:'collapse','& td,& th':{p:1,textAlign:'left',borderBottom:'1px solid #444'}}}><thead><tr><th>Producto</th><th>Precio</th></tr></thead><tbody>{result.products.map(p=><tr key={p.id}><td>{p.name}</td><td>{money(p.price)}</td></tr>)}</tbody></Box></Box>
