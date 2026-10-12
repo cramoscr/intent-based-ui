@@ -41,16 +41,16 @@ export default function App() {
   const reducedMotion=useMediaQuery('(prefers-reduced-motion: reduce)');
   async function run(value) {
     setIntent(value);
+    if(conversation){
+      setConversation(previous=>({...previous,messages:[...previous.messages,{from:'user',text:value},{from:'assistant',text:'Estamos preparando la conexión segura con el motor de pedidos. Todavía no se ha registrado ningún pedido.'}]}));
+      setIntent('');
+      return;
+    }
     const {mode,query}=classify(value);
     if(mode==='home'){setResult(null);return;}
     if(mode==='future'){
       setConversation({step:'customer',messages:[{from:'user',text:value},{from:'assistant',text:'¿Para quién es el pedido?'}]});
       setResult(null);
-      setIntent('');
-      return;
-    }
-    if(conversation){
-      setConversation(previous=>({...previous,messages:[...previous.messages,{from:'user',text:value},{from:'assistant',text:'Estamos preparando la conexión segura con el motor de pedidos. Todavía no se ha registrado ningún pedido.'}]}));
       setIntent('');
       return;
     }
