@@ -1,41 +1,43 @@
 # IBUI-003 — Crear pedido para Marvin
 
-**Status:** In progress — specification initiated
+**Status:** In progress — interaction direction approved
 **Date:** 2026-10-12
 
 ## Goal
-Prototype a Taller transaction initiated by the intent `Crear pedido para Marvin`, using progressive disclosure instead of traditional ERP navigation.
+Reproduce the existing Fabrícamelo/Alexa order-creation dialogue in Intent-Based-UI, using typed text instead of speech. The business conversation is the baseline; the UI adds a visual trace of the order being assembled.
 
-## Proposed interaction
-1. Operator enters `Crear pedido para Marvin` on the intent-first home.
-2. System resolves the customer through the existing customer resolver. If ambiguous, ask the operator to select the correct customer.
-3. System requests a product; operator can type a natural phrase such as `Cirio pascual 10 x 80`.
-4. System resolves the product through the existing catalog API and asks for clarification when needed.
-5. System collects quantity (default of one only if clearly shown and editable) and optionally committed date.
-6. System displays a compact order summary and requires explicit confirmation before persisting.
-7. On success, show a clear receipt/identifier and offer the next action. On failure, preserve the draft and provide recovery.
+## Approved interaction
+- Chat-like, single-surface conversation (similar to ChatGPT).
+- Typed text for now. Voice is deferred.
+- Reuse the existing Alexa dialogue sequence and business behavior; inspect its implementation before coding rather than inventing a separate workflow.
+- Show a single evolving visual order summary alongside/in the conversation, not a new card after every turn.
+- Ask only for information still missing; let users correct previously entered values.
+- Require explicit confirmation before persisting.
+- Preserve the established Cirios-App visual language and intent-first home.
 
-## UX rules
-- Keep the home free of traditional menus and product cards.
-- Reveal a contextual order summary only after the intent is recognized.
-- Support text first; do not depend on Alexa or voice recognition.
-- Use the existing Cirios-App visual language.
-- No write operation before explicit confirmation.
-- Prevent accidental duplicate submission.
+## Illustrative journey (validate against actual Alexa implementation)
+1. User: `Crear pedido para Marvin`.
+2. Resolve customer, clarify if ambiguous, and ask for the product.
+3. User supplies product naturally, potentially with quantity embedded.
+4. Resolve product and collect any missing quantity or delivery date according to existing behavior.
+5. Display and update the visual trace: customer, products/quantities, committed date.
+6. Show final summary, confirm, then submit through the existing order mechanism.
+7. Handle success, errors, and retries without accidental duplicates.
 
-## Integration boundaries
-- Reuse existing customer, catalog and order endpoints where appropriate, after inspecting their actual contracts.
-- Do not modify the backend, production orders, or FAB-011 as part of the initial prototype.
-- Do not introduce a generalized workflow engine or new persistence layer.
+## Boundaries
+- This is **not** a three-screen wizard.
+- No microphone, speech-to-text, Alexa UI embedding, new general-purpose conversation engine, or new persistence layer for the initial prototype.
+- No production order writes until API contract, authentication, and confirmation semantics have been reviewed.
+- Avoid disrupting FAB-011 or the existing Alexa experience.
 
 ## Acceptance criteria
-- [ ] Customer resolved or ambiguity handled.
-- [ ] Product resolved or ambiguity handled.
-- [ ] Quantity and committed date can be reviewed/edited.
-- [ ] Explicit confirmation before order creation.
-- [ ] Successful transaction and failure states handled.
-- [ ] Mobile interaction verified.
-- [ ] Existing backend contracts and deployment impact reviewed before implementation.
+- [ ] Actual Alexa order dialogue and API contracts reviewed.
+- [ ] Typed conversation matches existing order-flow semantics.
+- [ ] One evolving visual order summary, editable without restarting.
+- [ ] Customer and product ambiguity handled.
+- [ ] Explicit confirmation and duplicate-submit protection.
+- [ ] Mobile usability validated.
+- [ ] Controlled end-to-end order test and error recovery verified.
 
 ## Next
-Inspect current frontend structure and existing order API contract, then implement the smallest viable flow in isolation.
+Inspect Fabrícamelo's Alexa dialogue implementation and Cirios-App order endpoints, then build the smallest compatible text-first UI flow.
