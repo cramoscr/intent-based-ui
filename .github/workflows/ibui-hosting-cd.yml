@@ -38,6 +38,21 @@ jobs:
         working-directory: software/app
         run: npm run build
 
+      - name: Wait for real public catalog API
+        run: |
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent --show-error --max-time 10 \
+              "https://us-central1-cirios-app.cloudfunctions.net/publicCatalogApi" \
+              | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>{const d=JSON.parse(s);if(!Array.isArray(d.products))process.exit(1)})'; then
+              echo "Real catalog API is available"
+              exit 0
+            fi
+            echo "Catalog not ready yet ($attempt/20)"
+            sleep 15
+          done
+          echo "Catalog API not available: aborting IBUI deployment"
+          exit 1
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:
