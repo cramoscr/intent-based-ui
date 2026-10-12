@@ -1,54 +1,42 @@
 # Roadmap — Intent-Based-UI
 
-**Updated:** 2026-10-11  
-**Legend:** ✅ Done · 🔄 In progress / next · ⬜ Pending
+**Updated:** 2026-10-12  
+**Legend:** 🟩 [x] Done · 🟨 [ ] In progress · ⬜ [ ] Pending
 
-## Phase 0 — Foundation
+## Foundation
+- 🟩 [x] Independent public repository, vision and project structure.
+- 🟩 [x] Adopt Cirios-App visual foundations.
 
-- ✅ Create independent public repository under `cramoscr/intent-based-ui` (Apache-2.0).
-- ✅ Record project vision and intent-first UI principles.
-- ✅ Establish independent project structure for specifications, software, and project control.
-- ✅ Adopt the established Cirios-App visual foundations as a starting point.
+## IBUI-001 — Intent-first home
+- 🟩 [x] Responsive minimal home, suggestions and favicon.
+- 🟩 [x] Published to Firebase Hosting and verified on mobile.
+- 🟩 [x] Milestone closed.
 
-## Phase 1 — IBUI-001: Intent-first home (delivered)
+## IBUI-002 — Adaptive product catalog
+- 🟩 [x] Adaptive catalog: cards for exploration and compact list for many products.
+- 🟩 [x] Home retains action suggestion bubbles.
+- 🟩 [x] Real catalog integrated.
+- 🟩 [x] Product images displayed when available.
+- 🟩 [x] Published and verified in production, including browser cache retest.
+- 🟩 [x] Milestone closed (user verified 2026-10-12).
+- **Note:** Earlier text-only API and image-placeholder decisions were superseded by delivered behavior.
 
-- ✅ Specify the minimal home screen with contextual action suggestions.
-- ✅ Implement the initial responsive web prototype.
-- ✅ Publish the prototype to Firebase Hosting (`fabriquemelo-app` site).
-- ✅ Verify the published experience on a mobile phone.
-- ✅ Add a workshop-inspired favicon.
-- ✅ Close the first deliverable.
+## IBUI-003 — Conversational order creation
+- 🟩 [x] Initiate functional specification.
+- 🟩 [x] Identify reusable customer resolver and authenticated order client.
+- 🟨 [ ] Specify secure web-to-backend integration and conversation state.
+- ⬜ [ ] Implement text-based order journey with progressive visual summary.
+- ⬜ [ ] Test customer ambiguity, products, quantity, nullable delivery date, correction and confirmation.
+- ⬜ [ ] Validate authorization, idempotency and real persistence safely.
+- ⬜ [ ] Publish and verify on mobile.
+- ⬜ [ ] Close milestone.
 
-## Phase 2 — IBUI-002: Adaptive product catalog (specified; not delivered)
-
-- ✅ Approve intent-adaptive presentation: product cards for browsing and compact lists for larger result sets.
-- ✅ Keep the home screen focused on action-suggestion bubbles, not product cards.
-- ✅ Specify integration with the existing Cirios-App text-based catalog API.
-- ✅ Decide to defer product images in the API; reserve placeholder image areas in product cards.
-- ✅ Document the IBUI-002 specification and OpenSpec change.
-- ⬜ Implement and integrate the real product catalog.
-- ⬜ Validate catalog display, search behaviors, and mobile usability.
-- ⬜ Publish and verify IBUI-002 in production.
-
-## Phase 3 — Delivery automation (next priority)
-
-- 🔄 Set up GitHub CI/CD for Intent-Based-UI, following the proven Fabrícamelo publishing workflow.
-- ⬜ Validate the deployment pipeline with a controlled change.
-- ⬜ Document deployment and rollback steps.
-
-## Phase 4 — Experience validation
-
-- ⬜ Test representative Taller and Tienda journeys with real users, including Jenny and a shopper.
-- ⬜ Compare comprehension, steps, errors, and perceived effort against Cirios-App workflows.
-- ⬜ Refine progressive disclosure and adaptive presentation from observations.
-
-## Phase 5 — Architecture decision
-
-- ⬜ Decide whether to adopt, revise, or reject the experimental approach based on validation.
-- ⬜ Evaluate reusable components and integration boundaries only when justified by evidence.
+## Delivery and validation
+- ⬜ [ ] Verify CI/CD pipeline and document rollback.
+- ⬜ [ ] Compare Taller and Tienda workflows with real users.
+- ⬜ [ ] Decide whether to generalize IBUI based on results.
 
 ## Immediate next step
+Inspect Alexa conversation transitions and order API security boundary; implement an isolated IBUI-003 prototype before any production publication.
 
-**Implement CI/CD**, then return to IBUI-002 catalog integration. Keep the existing API text-only for this milestone and avoid premature architectural expansion.
-
-> **Status discipline:** ✅ means completed. Approved specifications are not equivalent to implemented or deployed features.
+> A completed milestone is not the same as a planned or partially specified milestone.
