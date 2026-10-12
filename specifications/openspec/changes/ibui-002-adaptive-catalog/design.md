@@ -41,3 +41,15 @@ No cart, product editing, checkout, backend redesign, or production deployment i
 - Keep the card component ready to accept an optional future `imageUrl` without layout redesign. Avoid assuming the current API returns that field.
 - Do not use fabricated product records/prices as if they were live data.
 - Actual source code for the deployed IBUI-001 application has not yet been located in this repository; verify it before implementation.
+
+## Approved visual reference — contextual catalog cards (2026-10-11)
+
+The user supplied a visual reference for the catalog result screen. Preserve its interaction hierarchy rather than treating it as a new home page:
+
+1. **Home / initial search:** minimal intent input plus small suggestion bubbles/chips; NO product cards.
+2. **After a catalog intent:** keep the expressed request visible near the top and introduce results with a short contextual sentence.
+3. **Catalog result:** show a responsive grid of product cards, visually aligned with the supplied dark minimal mockup. Each card has a reserved image region (local dummy/placeholder initially), product name, optional dimensions only if reliably available, and actual catalog price.
+4. **Continue conversation:** keep the next-intent input available beneath the result rather than navigating into a conventional catalog module.
+5. **Adaptive behavior:** broad listings may use compact rows; card grid is for exploratory product/category results.
+
+The mockup's photographed products, dimensions and empty price marks are visual references, not actual catalog records. The existing API only exposes `id`, `name`, `category`, `price`. Do not modify its contract or infer dimensions from product names as structured data without an approved rule.
