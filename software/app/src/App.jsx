@@ -41,7 +41,7 @@ export default function App() {
   const [catalog,setCatalog]=useState([]);
   const [loginEmail,setLoginEmail]=useState('');
   const [loginPassword,setLoginPassword]=useState('');
-  const [checkoutToken,setCheckoutToken]=useState(null);
+  const [checkoutToken,setCheckoutToken]=useState(()=>{try{const saved=JSON.parse(sessionStorage.getItem('ibui-auth')||'null');return saved?.expiresAt>Date.now()+60000?saved.idToken:null;}catch{return null;}});
   const [checkoutError,setCheckoutError]=useState('');
   const reducedMotion=useMediaQuery('(prefers-reduced-motion: reduce)');
   async function run(value) {
@@ -72,9 +72,9 @@ export default function App() {
         const date=normalize(text)==='sin fecha'?null:text;
         const valid=date===null||(/^\d{4}-\d{2}-\d{2}$/.test(date)&&!Number.isNaN(Date.parse(date))&&new Date(date).toISOString().slice(0,10)===date);
         if(!valid)reply(previous,'Indica una fecha válida AAAA-MM-DD o «sin fecha».');
-        else reply({...previous,step:'checkout',committedDate:date},'Carrito listo. Revisa el resumen e inicia sesión para confirmar el pedido.');
+        else reply({...previous,step:'checkout',committedDate:date},'Carrito listo. Revisa el resumen y confirma el pedido.');
       } else {
-        reply(previous,'Usa el botón Confirmar pedido después de iniciar sesión, o escribe «cancelar pedido».');
+        reply(previous,'Usa el botón Confirmar pedido o escribe «cancelar pedido».');
       }
       setIntent('');
       return;
@@ -117,11 +117,11 @@ export default function App() {
         const auth=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBXv0te6qOQY3Itnmy3a0FSN71kZN2nWeY',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:loginEmail.trim(),password:loginPassword,returnSecureToken:true})});
         const data=await auth.json();
         if(!auth.ok||!data.idToken)throw new Error('No se pudo iniciar sesión. Comprueba tus credenciales.');
-        token=data.idToken;setCheckoutToken(token);setLoginPassword('');
+        token=data.idToken;setCheckoutToken(token);sessionStorage.setItem('ibui-auth',JSON.stringify({idToken:token,expiresAt:Date.now()+Number(data.expiresIn||3600)*1000}));setLoginPassword('');
       }
       const response=await fetch('https://us-central1-cirios-app.cloudfunctions.net/ibuiCheckoutApi',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({customer:conversation.customer,committedDate:conversation.committedDate,items:conversation.items.map(x=>({productId:x.id,quantity:x.quantity}))})});
       const data=await response.json();
-      if(!response.ok){if(response.status===401)setCheckoutToken(null);throw new Error(data.error||'No se pudo registrar el pedido.');}
+      if(!response.ok){if(response.status===401){setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');}throw new Error(data.error||'No se pudo registrar el pedido.');}
       setConversation(previous=>({...previous,step:'complete',messages:[...previous.messages,{from:'assistant',text:'Pedido registrado correctamente. Número: '+data.orderId}]}));
     }catch(e){setCheckoutError(e.message||'Error al registrar pedido. El carrito se conserva.');}
     finally{setBusy(false);}
@@ -132,7 +132,7 @@ export default function App() {
       <Box component="header" sx={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><Typography sx={{fontSize:{xs:22,sm:28},fontWeight:650,letterSpacing:'-.04em',cursor:'pointer'}} onClick={()=>{setResult(null);setConversation(null);setIntent('');}}>Mi Taller</Typography><IconButton disabled aria-label="Menú no disponible"><MenuRoundedIcon/></IconButton></Box>
       <Box component="main" sx={{flex:1,display:'flex',flexDirection:'column',justifyContent:showing?'flex-start':'center',gap:3,pb:'5vh',pt:showing?4:0}}>
         <Typography component="h1" sx={{fontSize:{xs:showing?27:32,sm:showing?34:44},fontWeight:650,textAlign:showing?'left':'center',letterSpacing:'-.045em',lineHeight:1.15}}>{conversation?'Crear pedido':showing?'Tu catálogo':'¿Qué quieres hacer?'}</Typography>
-        {conversation && <Box aria-live="polite" sx={{display:'grid',gap:1.5}}>{conversation.messages.map((message,index)=><Box key={index} sx={{justifySelf:message.from==='user'?'end':'start',bgcolor:message.from==='user'?'#3c3c3c':'#303030',px:2,py:1.5,borderRadius:3,maxWidth:'90%'}}><Typography>{message.text}</Typography></Box>)}<Box sx={{bgcolor:'#303030',p:2,borderRadius:2,display:'grid',gap:1}}><Typography fontWeight={600}>Carrito temporal · {conversation.items.length} producto(s)</Typography>{conversation.items.map((item,index)=><Typography key={index} sx={{fontSize:14}}>{item.quantity} × {item.name} — {money(Number(item.price||0)*item.quantity)}</Typography>)}{conversation.items.length>0&&<Typography fontWeight={600}>Total estimado: {money(conversation.items.reduce((sum,item)=>sum+Number(item.price||0)*item.quantity,0))}</Typography>}<Typography color="text.secondary" sx={{fontSize:12}}>{conversation.step==='complete'?'Pedido registrado':'Carrito temporal · se pierde al recargar'}</Typography>{conversation.step==='checkout'&&<Box sx={{display:'grid',gap:1.5,mt:1}}>{!checkoutToken&&<><TextField label="Correo de Cirios-App" type="email" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/><TextField label="Contraseña" type="password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/></>}{checkoutError&&<Alert severity="error">{checkoutError}</Alert>}<Button variant="contained" disabled={busy} onClick={()=>void checkout()}>Confirmar pedido (checkout)</Button><Typography color="text.secondary" sx={{fontSize:12}}>Solo usuarios administradores autorizados. El pedido se guarda únicamente al confirmar.</Typography></Box>}</Box></Box>}
+        {conversation && <Box aria-live="polite" sx={{display:'grid',gap:1.5}}>{conversation.messages.map((message,index)=><Box key={index} sx={{justifySelf:message.from==='user'?'end':'start',bgcolor:message.from==='user'?'#3c3c3c':'#303030',px:2,py:1.5,borderRadius:3,maxWidth:'90%'}}><Typography>{message.text}</Typography></Box>)}<Box sx={{bgcolor:'#303030',p:2,borderRadius:2,display:'grid',gap:1}}><Typography fontWeight={600}>Carrito temporal · {conversation.items.length} producto(s)</Typography>{conversation.items.map((item,index)=><Typography key={index} sx={{fontSize:14}}>{item.quantity} × {item.name} — {money(Number(item.price||0)*item.quantity)}</Typography>)}{conversation.items.length>0&&<Typography fontWeight={600}>Total estimado: {money(conversation.items.reduce((sum,item)=>sum+Number(item.price||0)*item.quantity,0))}</Typography>}<Typography color="text.secondary" sx={{fontSize:12}}>{conversation.step==='complete'?'Pedido registrado':'Carrito temporal · se pierde al recargar'}</Typography>{conversation.step==='checkout'&&<Box sx={{display:'grid',gap:1.5,mt:1}}>{!checkoutToken&&<><TextField label="Correo de Cirios-App" type="email" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/><TextField label="Contraseña" type="password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/></>}{checkoutError&&<Alert severity="error">{checkoutError}</Alert>}<Button variant="contained" disabled={busy} onClick={()=>void checkout()}>Confirmar pedido</Button><Typography color="text.secondary" sx={{fontSize:12}}>Tu sesión se conserva durante esta pestaña. El pedido se guarda únicamente al confirmar.</Typography></Box>}</Box></Box>}
         {busy && <Box sx={{display:'flex',justifyContent:'center'}}><CircularProgress size={28}/></Box>}
         {result && <Box aria-live="polite">
           {result.mode==='error'?<Alert severity="warning">{result.message}</Alert>:result.mode==='future'?<Typography color="text.secondary">Crear pedidos estará disponible próximamente.</Typography>:<>
