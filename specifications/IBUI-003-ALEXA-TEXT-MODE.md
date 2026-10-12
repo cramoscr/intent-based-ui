@@ -1,6 +1,6 @@
 # IBUI-003 — Alexa Text-Mode: estudio técnico y experimento
 
-**Estado:** propuesta técnica, no implementada  
+**Estado:** arquitectura aprobada; implementación pendiente  
 **Fecha:** 2026-10-12  
 **Fuentes:** `cramoscr/fabricamelo/software/functions/src/alexa.ts`, `software/functions/src/index.ts`, `software/alexa/interaction-model-es-US.json`, FAB-008/008.2/008.3/008.4.
 
@@ -65,3 +65,23 @@ El servidor autentica y autoriza al operador, conserva el estado de sesión de f
 ## Criterio de decisión
 
 Continuar con Alexa Text-Mode si el experimento reutiliza la máquina existente sin replicar el flujo ni introducir un segundo motor de reglas. Si el SDK impide reutilización razonable, extraer una capa de orquestación compartida en lugar de simular solicitudes firmadas.
+
+## Decisión aprobada — 2026-10-12
+
+**Fabrícamelo es el dueño del motor conversacional multicanal.** Alexa e IBUI son adaptadores de canal, no implementaciones separadas del flujo de negocio. La expresión «Alexa Text-Mode» queda como nombre del experimento inicial, no como arquitectura definitiva.
+
+- **Alexa Adapter:** valida autenticidad Amazon, transforma intents/slots a eventos internos y convierte respuestas a formato Alexa.
+- **IBUI Adapter:** autentica al usuario web, interpreta o canaliza texto y proyecta la respuesta como texto + estado visual.
+- **Fabrícamelo Engine:** mantiene estados/transiciones de conversación, resoluciones de cliente/producto y orquestación de pedidos; acepta eventos estructurados o texto mediante interpretación compartida.
+- **Cirios-App:** autoridad para reglas de persistencia, validación de entidades y precios/totales definitivos.
+
+### Plan incremental aprobado
+
+1. Identificar límites de canal y lógica compartida en `alexa.ts` y caracterizar pruebas actuales.
+2. Extraer estado y orquestación del pedido sin cambiar contratos ni comportamiento de Alexa.
+3. Adelgazar el endpoint Alexa a un adaptador de firma/SDK/serialización; conservar regresión automatizada.
+4. Añadir adaptador IBUI y contrato JSON propio, **no** solicitudes Amazon simuladas ni firmas falsificadas.
+5. Validar equivalencia de recorridos, aislamiento de sesiones, autorización, confirmación e idempotencia.
+6. Desplegar solamente con instrucción explícita «publica en producción».
+
+**Restricción:** no construir framework genérico, agente IA ni segunda máquina de estados; primero refactorización pequeña y segura.
