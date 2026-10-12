@@ -4,3 +4,6 @@ Date: 2026-10-12
 Deployment: IBUI-002 catalog cards default presentation
 Source commit: 4b0b784c3c95ac9c2e64a42bf244eee54f67e819
 Trigger revision: 4
+
+Deployment: IBUI-003 main integration (catalog images + conversational preview)
+Trigger revision: 5
