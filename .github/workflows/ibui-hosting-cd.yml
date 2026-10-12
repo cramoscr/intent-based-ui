@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - .github/trigger-ci-cd
+      - .github/workflows/ibui-hosting-cd.yml
+      - software/app/**
 
 permissions:
   contents: read
