@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
   id-token: write
 
 concurrency:
@@ -47,3 +48,16 @@ jobs:
       - name: Deploy only IBUI Hosting target
         working-directory: software/app
         run: npx --yes firebase-tools deploy --only hosting:ibui --project fabricamelo-lab --non-interactive
+
+      - name: Publish CI/CD status
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          STATE="failure"
+          if [ "$JOB_STATUS" = "success" ]; then STATE="success"; fi
+          gh api --method POST "repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            -f state="$STATE" \
+            -f context="IBUI Firebase Hosting CD" \
+            -f description="CI/CD $STATE"
