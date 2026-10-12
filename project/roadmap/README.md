@@ -22,14 +22,13 @@
 - **Note:** Earlier text-only API and image-placeholder decisions were superseded by delivered behavior.
 
 ## IBUI-003 — Conversational order creation
-- 🟩 [x] Initiate functional specification.
-- 🟩 [x] Identify reusable customer resolver and authenticated order client.
-- 🟨 [ ] Specify secure web-to-backend integration and conversation state.
-- ⬜ [ ] Implement text-based order journey with progressive visual summary.
-- ⬜ [ ] Test customer ambiguity, products, quantity, nullable delivery date, correction and confirmation.
-- ⬜ [ ] Validate authorization, idempotency and real persistence safely.
-- ⬜ [ ] Publish and verify on mobile.
-- ⬜ [ ] Close milestone.
+- 🟩 [x] Text-based conversational order flow and progressive temporary cart.
+- 🟩 [x] Product resolution, quantities and optional delivery date.
+- 🟩 [x] Explicit checkout confirmation with authenticated Cirios-App backend.
+- 🟩 [x] Firebase Hosting and Functions CI/CD passed.
+- 🟩 [x] User verified an order reached the backend in production (2026-10-12).
+- 🟩 [x] Milestone closed (2026-10-12).
+- **Follow-ups (not blockers):** Understand quantities written as words (e.g. «uno»), compact long conversations, support corrections, review Firebase web API key restrictions and authentication UX; assess idempotency for retries.
 
 ## Delivery and validation
 - ⬜ [ ] Verify CI/CD pipeline and document rollback.
@@ -37,6 +36,6 @@
 - ⬜ [ ] Decide whether to generalize IBUI based on results.
 
 ## Immediate next step
-Inspect Alexa conversation transitions and order API security boundary; implement an isolated IBUI-003 prototype before any production publication.
+IBUI-003 closed. Plan the next milestone separately; preserve the working production checkout.
 
 > A completed milestone is not the same as a planned or partially specified milestone.
