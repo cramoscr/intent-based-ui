@@ -19,3 +19,10 @@
 - [ ] Verify comparison of three products when fields are available.
 - [ ] Test on a mobile phone.
 - [ ] Confirm no production or FAB-011 changes.
+
+## Approved scope refinement — 2026-10-11
+
+- [ ] Build text-first product cards using real `id`, `name`, `category`, `price` fields.
+- [ ] Reserve a consistent image region and use a local dummy placeholder; support optional future image URL in component design.
+- [ ] Confirm the deployed IBUI-001 source location before modifying the frontend.
+- [ ] Keep `catalogApi` unchanged; image-field expansion is deferred to a separate future change.
