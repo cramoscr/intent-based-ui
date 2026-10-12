@@ -37,12 +37,23 @@ export default function App() {
   const [intent,setIntent]=useState('');
   const [result,setResult]=useState(null);
   const [busy,setBusy]=useState(false);
+  const [conversation,setConversation]=useState(null);
   const reducedMotion=useMediaQuery('(prefers-reduced-motion: reduce)');
   async function run(value) {
     setIntent(value);
     const {mode,query}=classify(value);
     if(mode==='home'){setResult(null);return;}
-    if(mode==='future'){setResult({mode});return;}
+    if(mode==='future'){
+      setConversation({step:'customer',messages:[{from:'user',text:value},{from:'assistant',text:'¿Para quién es el pedido?'}]});
+      setResult(null);
+      setIntent('');
+      return;
+    }
+    if(conversation){
+      setConversation(previous=>({...previous,messages:[...previous.messages,{from:'user',text:value},{from:'assistant',text:'Estamos preparando la conexión segura con el motor de pedidos. Todavía no se ha registrado ningún pedido.'}]}));
+      setIntent('');
+      return;
+    }
     setBusy(true);setResult(null);
     try {
       const url=import.meta.env.VITE_CATALOG_API_URL || 'https://us-central1-cirios-app.cloudfunctions.net/publicCatalogApi';
@@ -55,12 +66,13 @@ export default function App() {
     } catch(e) {setResult({mode:'error',message:e.message || 'No se pudo consultar el catálogo.'});}
     finally {setBusy(false);}
   }
-  const showing=Boolean(result);
+  const showing=Boolean(result || conversation);
   return <Box sx={{minHeight:'100dvh',bgcolor:'#111',display:'grid',placeItems:'center',p:{xs:0,sm:2}}}>
     <Box sx={{width:'100%',maxWidth:720,minHeight:{xs:'100dvh',sm:'min(84dvh,760px)'},bgcolor:'#242424',borderRadius:{xs:0,sm:'36px'},px:{xs:2.5,sm:4},py:{xs:3.5,sm:4},display:'flex',flexDirection:'column'}}>
-      <Box component="header" sx={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><Typography sx={{fontSize:{xs:22,sm:28},fontWeight:650,letterSpacing:'-.04em',cursor:'pointer'}} onClick={()=>{setResult(null);setIntent('');}}>Mi Taller</Typography><IconButton disabled aria-label="Menú no disponible"><MenuRoundedIcon/></IconButton></Box>
+      <Box component="header" sx={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><Typography sx={{fontSize:{xs:22,sm:28},fontWeight:650,letterSpacing:'-.04em',cursor:'pointer'}} onClick={()=>{setResult(null);setConversation(null);setIntent('');}}>Mi Taller</Typography><IconButton disabled aria-label="Menú no disponible"><MenuRoundedIcon/></IconButton></Box>
       <Box component="main" sx={{flex:1,display:'flex',flexDirection:'column',justifyContent:showing?'flex-start':'center',gap:3,pb:'5vh',pt:showing?4:0}}>
-        <Typography component="h1" sx={{fontSize:{xs:showing?27:32,sm:showing?34:44},fontWeight:650,textAlign:showing?'left':'center',letterSpacing:'-.045em',lineHeight:1.15}}>{showing?'Tu catálogo':'¿Qué quieres hacer?'}</Typography>
+        <Typography component="h1" sx={{fontSize:{xs:showing?27:32,sm:showing?34:44},fontWeight:650,textAlign:showing?'left':'center',letterSpacing:'-.045em',lineHeight:1.15}}>{conversation?'Crear pedido':showing?'Tu catálogo':'¿Qué quieres hacer?'}</Typography>
+        {conversation && <Box aria-live="polite" sx={{display:'grid',gap:1.5}}>{conversation.messages.map((message,index)=><Box key={index} sx={{justifySelf:message.from==='user'?'end':'start',bgcolor:message.from==='user'?'#3c3c3c':'#303030',px:2,py:1.5,borderRadius:3,maxWidth:'90%'}}><Typography>{message.text}</Typography></Box>)}<Typography color="text.secondary" sx={{fontSize:12}}>Vista preliminar · sin conexión al servicio de pedidos</Typography></Box>}
         {busy && <Box sx={{display:'flex',justifyContent:'center'}}><CircularProgress size={28}/></Box>}
         {result && <Box aria-live="polite">
           {result.mode==='error'?<Alert severity="warning">{result.message}</Alert>:result.mode==='future'?<Typography color="text.secondary">Crear pedidos estará disponible próximamente.</Typography>:<>
