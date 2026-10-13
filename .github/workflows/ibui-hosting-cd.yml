@@ -38,7 +38,11 @@ jobs:
 
       - name: Build
         working-directory: software/app
-        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ vars.IBUI_FIREBASE_WEB_API_KEY }}
+        run: |
+          test -n "$VITE_FIREBASE_API_KEY" || { echo "Missing IBUI_FIREBASE_WEB_API_KEY repository variable"; exit 1; }
+          npm run build
 
       - name: Wait for real public catalog API
         run: |
