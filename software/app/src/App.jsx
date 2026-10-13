@@ -143,6 +143,7 @@ export default function App() {
     if(busy)return;
     setBusy(true);setCheckoutError('');
     try{
+      if(!import.meta.env.VITE_FIREBASE_API_KEY)throw new Error('Falta configurar la clave web de Firebase.');
       if(!loginEmail.trim()||!loginPassword)throw new Error('Introduce tu correo y contraseña.');
       const auth=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${import.meta.env.VITE_FIREBASE_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:loginEmail.trim(),password:loginPassword,returnSecureToken:true})});
       const data=await auth.json();
@@ -153,6 +154,7 @@ export default function App() {
       if(result?.query)url.searchParams.set('customer',result.query);
       const response=await fetch(url,{headers:{Authorization:'Bearer '+data.idToken}});
       const payload=await response.json();
+      if(response.status===401){setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');throw new Error('La sesión venció. Inicia sesión nuevamente.');}
       if(!response.ok)throw new Error(response.status===403?'No tienes permiso para consultar pedidos.':payload.error||'No se pudieron consultar pedidos.');
       if(!Array.isArray(payload.orders))throw new Error('Respuesta de pedidos inesperada.');
       setResult({mode:'orders',orders:payload.orders,hasMore:Boolean(payload.hasMore)});
@@ -165,6 +167,7 @@ export default function App() {
     try{
       let token=checkoutToken;
       if(!token){
+        if(!import.meta.env.VITE_FIREBASE_API_KEY)throw new Error('Falta configurar la clave web de Firebase.');
         if(!loginEmail.trim()||!loginPassword)throw new Error('Introduce el correo y contraseña de tu cuenta de Cirios-App.');
         const auth=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${import.meta.env.VITE_FIREBASE_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:loginEmail.trim(),password:loginPassword,returnSecureToken:true})});
         const data=await auth.json();
