@@ -28,7 +28,7 @@
 - 🟩 [x] Firebase Hosting and Functions CI/CD passed.
 - 🟩 [x] User verified an order reached the backend in production (2026-10-12).
 - 🟩 [x] Milestone closed (2026-10-12).
-- **Follow-ups (not blockers):** Understand quantities written as words (e.g. «uno»), compact long conversations, support corrections, review Firebase web API key restrictions and authentication UX; assess idempotency for retries.
+- **Follow-ups (not blockers):** Understand quantities written as words, compact long conversations, support corrections, review Firebase web API key restrictions and authentication UX; assess idempotency for retries.
 
 ## IBUI-003.1 — Conversational UX refinement
 - 🟩 [x] Approve top-positioned text entry, live order summary and removal of repeated yes/no prompts.
@@ -36,12 +36,25 @@
 - 🟨 [ ] Implement and test the refined dialogue in the web app.
 - ⬜ [ ] Validate on mobile and publish only on explicit authorization.
 
+## IBUI-004 — Conversational order consultation
+- 🟩 [x] Functional specification and OpenSpec proposal, requirements and tasks documented.
+- ⬜ [ ] Inspect Cirios-App read API, status semantics and authorization.
+- ⬜ [ ] Implement pending/recent/customer order queries and adaptive display.
+- ⬜ [ ] Validate basic detail selection, mobile UX and non-regression.
+- ⬜ [ ] Publish only with explicit authorization.
+
+## Future candidates (proposed)
+- ⬜ [ ] IBUI-005 — Detailed order consultation.
+- ⬜ [ ] IBUI-006 — Modify existing orders.
+- ⬜ [ ] IBUI-007 — Customer management by intent.
+- ⬜ [ ] IBUI-008 — Progressive voice integration.
+
 ## Delivery and validation
 - ⬜ [ ] Verify CI/CD pipeline and document rollback.
 - ⬜ [ ] Compare Taller and Tienda workflows with real users.
 - ⬜ [ ] Decide whether to generalize IBUI based on results.
 
 ## Immediate next step
-Implement and validate IBUI-003.1 without changing the existing production checkout or deploying without authorization.
+Complete IBUI-003.1 UX refinement or start IBUI-004 API contract inspection; neither authorizes production deployment.
 
 > A completed milestone is not the same as a planned or partially specified milestone.
