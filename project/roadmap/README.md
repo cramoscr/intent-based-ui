@@ -1,6 +1,6 @@
 # Roadmap — Intent-Based-UI
 
-**Updated:** 2026-10-12  
+**Updated:** 2026-10-13  
 **Legend:** 🟩 [x] Done · 🟨 [ ] In progress · ⬜ [ ] Pending
 
 ## Foundation
@@ -30,12 +30,18 @@
 - 🟩 [x] Milestone closed (2026-10-12).
 - **Follow-ups (not blockers):** Understand quantities written as words (e.g. «uno»), compact long conversations, support corrections, review Firebase web API key restrictions and authentication UX; assess idempotency for retries.
 
+## IBUI-003.1 — Conversational UX refinement
+- 🟩 [x] Approve top-positioned text entry, live order summary and removal of repeated yes/no prompts.
+- 🟩 [x] Record UX specification and acceptance criteria.
+- 🟨 [ ] Implement and test the refined dialogue in the web app.
+- ⬜ [ ] Validate on mobile and publish only on explicit authorization.
+
 ## Delivery and validation
 - ⬜ [ ] Verify CI/CD pipeline and document rollback.
 - ⬜ [ ] Compare Taller and Tienda workflows with real users.
 - ⬜ [ ] Decide whether to generalize IBUI based on results.
 
 ## Immediate next step
-IBUI-003 closed. Plan the next milestone separately; preserve the working production checkout.
+Implement and validate IBUI-003.1 without changing the existing production checkout or deploying without authorization.
 
 > A completed milestone is not the same as a planned or partially specified milestone.
