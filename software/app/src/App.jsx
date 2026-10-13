@@ -84,6 +84,15 @@ export default function App() {
       setIntent('');
       return;
     }
+    const selection=normalize(value).match(/^(?:ver|mostrar|detalle(?:s)? de) (?:el )?(primero|segundo|tercero|[1-9][0-9]*)$/);
+    if(selection && result?.mode==='orders'){
+      const ordinals={primero:1,segundo:2,tercero:3};
+      const index=(ordinals[selection[1]]||Number(selection[1]))-1;
+      const selected=result.orders[index];
+      if(selected){setOrderSelection(selected.id);setIntent('');return;}
+      setResult(previous=>({...previous,notice:'Ese pedido no aparece en los resultados actuales.'}));
+      setIntent('');return;
+    }
     const {mode,query}=classify(value);
     if(mode==='home'){setResult(null);return;}
     if(mode==='orders'){
@@ -184,6 +193,7 @@ export default function App() {
             <Button variant="contained" disabled={busy} onClick={()=>void signInForOrders()}>Consultar pedidos</Button>
           </Box>:result.mode==='orders'?<Box sx={{display:'grid',gap:1.5}}>
             <Typography color="text.secondary">{result.orders.length? `Encontré ${result.orders.length} pedido(s).`:'No encontré pedidos pendientes para esta consulta.'}</Typography>
+            {result.notice&&<Alert severity="info">{result.notice}</Alert>}
             {result.orders.map((order,index)=><Box key={order.id} component="button" type="button" onClick={()=>setOrderSelection(orderSelection===order.id?null:order.id)} sx={{bgcolor:'#303030',color:'inherit',border:'1px solid #444',borderRadius:2,p:2,textAlign:'left',cursor:'pointer'}}>
               <Typography fontWeight={600}>{index+1}. {order.clientName}</Typography>
               <Typography sx={{fontSize:13,color:'#bbb'}}>Pedido {order.id} · {order.committedDate||'Sin fecha comprometida'}</Typography>
