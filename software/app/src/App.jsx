@@ -144,7 +144,7 @@ export default function App() {
     setBusy(true);setCheckoutError('');
     try{
       if(!loginEmail.trim()||!loginPassword)throw new Error('Introduce tu correo y contraseña.');
-      const auth=await fetch('`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${import.meta.env.VITE_FIREBASE_API_KEY}`',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:loginEmail.trim(),password:loginPassword,returnSecureToken:true})});
+      const auth=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${import.meta.env.VITE_FIREBASE_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:loginEmail.trim(),password:loginPassword,returnSecureToken:true})});
       const data=await auth.json();
       if(!auth.ok||!data.idToken)throw new Error('No se pudo iniciar sesión.');
       setCheckoutToken(data.idToken);setLoginPassword('');
@@ -166,7 +166,7 @@ export default function App() {
       let token=checkoutToken;
       if(!token){
         if(!loginEmail.trim()||!loginPassword)throw new Error('Introduce el correo y contraseña de tu cuenta de Cirios-App.');
-        const auth=await fetch('`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${import.meta.env.VITE_FIREBASE_API_KEY}`',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:loginEmail.trim(),password:loginPassword,returnSecureToken:true})});
+        const auth=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${import.meta.env.VITE_FIREBASE_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:loginEmail.trim(),password:loginPassword,returnSecureToken:true})});
         const data=await auth.json();
         if(!auth.ok||!data.idToken)throw new Error('No se pudo iniciar sesión. Comprueba tus credenciales.');
         token=data.idToken;setCheckoutToken(token);sessionStorage.setItem('ibui-auth',JSON.stringify({idToken:token,expiresAt:Date.now()+Number(data.expiresIn||3600)*1000}));setLoginPassword('');
