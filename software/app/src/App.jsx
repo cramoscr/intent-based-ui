@@ -12,6 +12,7 @@ function classify(text) {
   if (!q) return { mode:'home', query:'' };
   if (/^(mostrar|muestra|ver|consultar|consulta|listar|lista|ultimos|buscar|pedidos de)/.test(q) && /pedidos?/.test(q) && !/crear|agregar/.test(q)) {
     const customer = /pedidos? de (.+)$/.exec(q)?.[1] || '';
+    if (/ultimos|recientes/.test(q)) return { mode:'unsupportedRecent', query:'' };
     return { mode:'orders', query:customer };
   }
   if (/^(crear|agregar|nuevo) pedido/.test(q) || /agregar al/.test(q)) return { mode:'future', query:'' };
@@ -95,6 +96,7 @@ export default function App() {
     }
     const {mode,query}=classify(value);
     if(mode==='home'){setResult(null);return;}
+    if(mode==='unsupportedRecent'){setResult({mode:'error',message:'La consulta de pedidos recientes todavía no está disponible. Consulta pedidos pendientes o por cliente.'});setIntent('');return;}
     if(mode==='orders'){
       setBusy(true);setResult(null);setOrderSelection(null);
       try{
