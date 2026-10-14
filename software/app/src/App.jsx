@@ -11,14 +11,14 @@ function classify(text) {
   const q = normalize(text);
   if (!q) return { mode:'home', query:'' };
   // Distintas expresiones naturales, una sola intención de consultar pedidos.
-  const orderRequest = /^(?:(?:dame|quiero ver|quiero consultar|busca|buscar|muestra|mostrar|muestrame|ver|consultar|consulta|listar|lista)\\s+(?:(?:los|las|mis)\\s+)?)?pedidos?\\s+de\\s+(.+)$/.exec(q);
-  if (orderRequest && !/^(?:crear|agregar)\\b/.test(q)) {
+  const orderRequest = /^(?:(?:dame|quiero ver|quiero consultar|busca|buscar|muestra|mostrar|muestrame|ver|consultar|consulta|listar|lista)\s+(?:(?:los|las|mis)\s+)?)?pedidos?\s+de\s+(.+)$/.exec(q);
+  if (orderRequest && !/^(?:crear|agregar)\b/.test(q)) {
     return { mode:'orders', query:orderRequest[1].trim() };
   }
-  if (/^(?:(?:mostrar|muestra|ver|consultar|consulta|listar|lista|ultimos|buscar|busca|dame|quiero ver)\\s+(?:(?:los|mis)\\s+)?)?pedidos?(?:\\s+pendientes)?$/.test(q)) {
+  if (/^(?:(?:mostrar|muestra|ver|consultar|consulta|listar|lista|ultimos|buscar|busca|dame|quiero ver)\s+(?:(?:los|mis)\s+)?)?pedidos?(?:\s+pendientes)?$/.test(q)) {
     return { mode:'orders', query:'' };
   }
-  if (/^(?:ultimos|recientes|mostrar|muestra|ver|consultar|lista|listar|buscar)\\b/.test(q) && /pedidos?/.test(q) && /ultimos|recientes/.test(q)) {
+  if (/^(?:ultimos|recientes|mostrar|muestra|ver|consultar|lista|listar|buscar)\b/.test(q) && /pedidos?/.test(q) && /ultimos|recientes/.test(q)) {
     return { mode:'unsupportedRecent', query:'' };
   }
   if (/^(crear|agregar|nuevo) pedido/.test(q) || /agregar al/.test(q)) return { mode:'future', query:'' };
