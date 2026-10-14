@@ -201,7 +201,7 @@ export default function App() {
             {result.notice&&<Alert severity="info">{result.notice}</Alert>}
             {result.orders.map((order,index)=><Box key={order.id} component="button" type="button" onClick={()=>setOrderSelection(orderSelection===order.id?null:order.id)} sx={{bgcolor:'#303030',color:'inherit',border:'1px solid #444',borderRadius:2,p:2,textAlign:'left',cursor:'pointer'}}>
               <Typography fontWeight={600}>{index+1}. {order.clientName}</Typography>
-              <Typography sx={{fontSize:13,color:'#bbb'}}>Pedido {order.id} · {order.committedDate||'Sin fecha comprometida'}</Typography>
+              <Typography sx={{fontSize:16,fontWeight:700,mt:0.5,mb:0.5}}>Entrega: {order.committedDate ? (()=>{const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(order.committedDate);return match?new Intl.DateTimeFormat('es-CR',{day:'numeric',month:'long',year:'numeric'}).format(new Date(Number(match[1]),Number(match[2])-1,Number(match[3]))):order.committedDate;})() : 'Sin fecha de entrega'}</Typography>
               <Typography sx={{fontSize:14}}>{(order.productNames||[]).join(', ')||'Sin detalle de productos'}</Typography>
               {orderSelection===order.id&&<Typography sx={{mt:1,fontWeight:600}}>Total: {money(order.total)} · Estado: Registrado</Typography>}
             </Box>)}
