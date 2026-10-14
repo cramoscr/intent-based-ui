@@ -4,3 +4,5 @@ Requested by: user explicit instruction 'publica en produccion'
 Target: fabricamelo-app (Firebase Hosting in fabricamelo-lab)
 Includes: correction of Hosting site identifier, commit fe2636a5058e737b0e78f425ef0b02da6904e4c7
 Requires: verify destination site exists, workflow successful, authentication and public URL before claiming production success.
+
+Retry: 2026-10-14, new Hosting site fabricamelo-app confirmed created in Firebase Console by user screenshot; retry previously authorized production release.
