@@ -52,6 +52,13 @@
 - ⬜ [ ] IBUI-007 — Customer management by intent.
 - ⬜ [ ] IBUI-008 — Progressive voice integration.
 
+## Production deployment control
+- 🟩 [x] GitHub Actions supports manual `workflow_dispatch` and a dedicated push trigger limited to `.deploy/production-request.txt`.
+- 🟩 [x] Normal code, documentation and workflow commits do **not** trigger production deployment.
+- 🟨 [ ] Validate the new marker-based trigger on the next explicitly authorized release; no deployment was requested by the workflow change.
+- **Procedure:** After the user explicitly says “publica en producción”, create or update `.deploy/production-request.txt` on `main` with a new release request (date, target commit and reason). That commit alone starts the existing Firebase Hosting CD workflow. Verify GitHub Actions conclusion and deployed behavior before claiming success.
+- **Fallback:** Run the same workflow manually through GitHub Actions → Run workflow. Never update the marker without explicit authorization.
+
 ## Delivery and validation
 - 🟨 [ ] CI/CD production execution verified; document rollback and restore ChatGPT-triggered deployments without automatic releases on ordinary commits.
 - ⬜ [ ] Compare Taller and Tienda workflows with real users.
