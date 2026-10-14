@@ -1,6 +1,12 @@
 name: IBUI Firebase Hosting CD
 
 on:
+  # A production deployment is requested only by changing this dedicated file.
+  # Ordinary source/documentation commits never trigger production.
+  push:
+    branches: [main]
+    paths:
+      - '.deploy/production-request.txt'
   workflow_dispatch:
 
 permissions:
