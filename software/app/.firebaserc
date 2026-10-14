@@ -6,7 +6,7 @@
     "fabricamelo-lab": {
       "hosting": {
         "ibui": [
-          "fabriquemelo-app"
+          "fabricamelo-app"
         ]
       }
     }
