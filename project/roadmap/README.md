@@ -1,6 +1,6 @@
 # Roadmap — Intent-Based-UI
 
-**Updated:** 2026-10-13 (production validation)  
+**Updated:** 2026-10-14 (repository review)  
 **Legend:** 🟩 [x] Done · 🟨 [ ] In progress · ⬜ [ ] Pending
 
 ## Foundation
@@ -33,7 +33,8 @@
 ## IBUI-003.1 — Conversational UX refinement
 - 🟩 [x] Approve top-positioned text entry, live order summary and removal of repeated yes/no prompts.
 - 🟩 [x] Record UX specification and acceptance criteria.
-- 🟨 [ ] Implement and test the refined dialogue in the web app.
+- 🟨 [ ] Implement and test the refined order-creation dialogue in the web app (verified source still uses the `another` yes/no step).
+- 🟩 [x] Position intent entry above order *consultation* results (IBUI-004); does not imply IBUI-003.1 is complete.
 - ⬜ [ ] Validate on mobile and publish only on explicit authorization.
 
 ## IBUI-004 — Conversational order consultation
@@ -45,6 +46,11 @@
 - 🟩 [x] User verified production behavior, including “dame los pedidos de Marvin”.
 - 🟩 [x] Milestone closed after user acceptance (2026-10-13).
 - **Deferred, not delivered:** Recent-order intent based on verified creation timestamps; detailed consultation belongs to IBUI-005. Do not imply these are working.
+
+## Intent resolution — next design principle
+- 🟩 [x] Document the ambition of completing a commercial intent in one instruction when all required details can be resolved (e.g. «crea un pedido de un cirio pascual 10 x 80 para Marvin»).
+- ⬜ [ ] Define minimal resolution, ambiguity, authorization and transaction-confirmation rules before implementation.
+- **Principle:** Ask only for missing mandatory information or real ambiguity; do not add conversational steps merely to simulate a wizard. One-shot execution is a documented direction, **not** a deployed capability.
 
 ## Future candidates (proposed)
 - ⬜ [ ] IBUI-005 — Detailed order consultation.
@@ -64,7 +70,12 @@
 - ⬜ [ ] Compare Taller and Tienda workflows with real users.
 - ⬜ [ ] Decide whether to generalize IBUI based on results.
 
+## Delivery window and temporary development freeze
+- 🟨 [ ] Through 2026-10-18: finish only feasible work already underway (especially IBUI-003.1 and deployment controls), without opening new features.
+- ⬜ [ ] From 2026-10-19: freeze new software feature development for 30 days; reserve effort for professional-skills improvement and evaluation of remote career opportunities. Maintain critical fixes only if needed.
+- ⬜ [ ] Reassess priorities after the freeze; future IBUI-005–008 remain proposals, not active commitments.
+
 ## Immediate next step
-Complete IBUI-003.1 UX refinement or define IBUI-005 detailed consultation. Separately restore ChatGPT-triggered deployments while requiring explicit production authorization.
+Prioritize IBUI-003.1 dialogue simplification and verify the explicitly authorized deployment mechanism. Do not claim the revised create-order flow has been implemented until its code and behavior are verified.
 
 > A completed milestone is not the same as a planned or partially specified milestone.
