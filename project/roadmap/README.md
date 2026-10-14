@@ -1,6 +1,6 @@
 # Roadmap — Intent-Based-UI
 
-**Updated:** 2026-10-13  
+**Updated:** 2026-10-13 (production validation)  
 **Legend:** 🟩 [x] Done · 🟨 [ ] In progress · ⬜ [ ] Pending
 
 ## Foundation
@@ -37,11 +37,14 @@
 - ⬜ [ ] Validate on mobile and publish only on explicit authorization.
 
 ## IBUI-004 — Conversational order consultation
-- 🟩 [x] Functional specification and OpenSpec proposal, requirements and tasks documented.
-- ⬜ [ ] Inspect Cirios-App read API, status semantics and authorization.
-- ⬜ [ ] Implement pending/recent/customer order queries and adaptive display.
-- ⬜ [ ] Validate basic detail selection, mobile UX and non-regression.
-- ⬜ [ ] Publish only with explicit authorization.
+- 🟩 [x] Specification, OpenSpec and authorized read-only Cirios-App endpoint implemented.
+- 🟩 [x] Authenticated order consultation and customer-name filters via natural language.
+- 🟩 [x] Responsive order results, basic selection, compact presentation and delivery-date sorting.
+- 🟩 [x] Intent input positioned above order results; internal order IDs hidden.
+- 🟩 [x] GitHub Actions manual production deployment succeeded (run 38497355872, commit 15fd0aa, 2026-10-13 Costa Rica).
+- 🟩 [x] User verified production behavior, including “dame los pedidos de Marvin”.
+- 🟩 [x] Milestone closed after user acceptance (2026-10-13).
+- **Deferred, not delivered:** Recent-order intent based on verified creation timestamps; detailed consultation belongs to IBUI-005. Do not imply these are working.
 
 ## Future candidates (proposed)
 - ⬜ [ ] IBUI-005 — Detailed order consultation.
@@ -50,11 +53,11 @@
 - ⬜ [ ] IBUI-008 — Progressive voice integration.
 
 ## Delivery and validation
-- ⬜ [ ] Verify CI/CD pipeline and document rollback.
+- 🟨 [ ] CI/CD production execution verified; document rollback and restore ChatGPT-triggered deployments without automatic releases on ordinary commits.
 - ⬜ [ ] Compare Taller and Tienda workflows with real users.
 - ⬜ [ ] Decide whether to generalize IBUI based on results.
 
 ## Immediate next step
-Complete IBUI-003.1 UX refinement or start IBUI-004 API contract inspection; neither authorizes production deployment.
+Complete IBUI-003.1 UX refinement or define IBUI-005 detailed consultation. Separately restore ChatGPT-triggered deployments while requiring explicit production authorization.
 
 > A completed milestone is not the same as a planned or partially specified milestone.
