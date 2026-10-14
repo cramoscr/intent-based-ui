@@ -10,10 +10,16 @@ const money = price => price == null || price === '' || !Number.isFinite(Number(
 function classify(text) {
   const q = normalize(text);
   if (!q) return { mode:'home', query:'' };
-  if (/^(mostrar|muestra|ver|consultar|consulta|listar|lista|ultimos|buscar|pedidos de)/.test(q) && /pedidos?/.test(q) && !/crear|agregar/.test(q)) {
-    const customer = /pedidos? de (.+)$/.exec(q)?.[1] || '';
-    if (/ultimos|recientes/.test(q)) return { mode:'unsupportedRecent', query:'' };
-    return { mode:'orders', query:customer };
+  // Distintas expresiones naturales, una sola intención de consultar pedidos.
+  const orderRequest = /^(?:(?:dame|quiero ver|quiero consultar|busca|buscar|muestra|mostrar|muestrame|ver|consultar|consulta|listar|lista)\\s+(?:(?:los|las|mis)\\s+)?)?pedidos?\\s+de\\s+(.+)$/.exec(q);
+  if (orderRequest && !/^(?:crear|agregar)\\b/.test(q)) {
+    return { mode:'orders', query:orderRequest[1].trim() };
+  }
+  if (/^(?:(?:mostrar|muestra|ver|consultar|consulta|listar|lista|ultimos|buscar|busca|dame|quiero ver)\\s+(?:(?:los|mis)\\s+)?)?pedidos?(?:\\s+pendientes)?$/.test(q)) {
+    return { mode:'orders', query:'' };
+  }
+  if (/^(?:ultimos|recientes|mostrar|muestra|ver|consultar|lista|listar|buscar)\\b/.test(q) && /pedidos?/.test(q) && /ultimos|recientes/.test(q)) {
+    return { mode:'unsupportedRecent', query:'' };
   }
   if (/^(crear|agregar|nuevo) pedido/.test(q) || /agregar al/.test(q)) return { mode:'future', query:'' };
   if (/comparar|compara|comparacion/.test(q)) return { mode:'compare', query:q };
