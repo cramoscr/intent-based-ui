@@ -1,13 +1,7 @@
 name: IBUI Firebase Hosting CD
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/trigger-ci-cd
-      - .github/workflows/ibui-hosting-cd.yml
-      - software/app/**
+  workflow_dispatch:
 
 permissions:
   contents: read
