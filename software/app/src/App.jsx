@@ -55,6 +55,7 @@ export default function App({toggleTheme,mode}) {
   const [loginPassword,setLoginPassword]=useState('');
   const [checkoutToken,setCheckoutToken]=useState(()=>{try{const saved=JSON.parse(sessionStorage.getItem('ibui-auth')||'null');return saved?.expiresAt>Date.now()+60000?saved.idToken:null;}catch{return null;}});
   const [checkoutError,setCheckoutError]=useState('');
+  const [pendingOrderQuery,setPendingOrderQuery]=useState(null);
   const [orderSelection,setOrderSelection]=useState(null);
   const reducedMotion=useMediaQuery('(prefers-reduced-motion: reduce)');
   async function run(value) {
@@ -63,7 +64,7 @@ export default function App({toggleTheme,mode}) {
     // Cerrar sesión es global, incluso durante la creación de un pedido.
     if(resolveSessionIntent(value)?.id==='auth.salir'){
       setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');setLoginPassword('');setCheckoutError('');
-      setConversation(null);setOrderSelection(null);setResult({mode:'logout-success'});return;
+      setConversation(null);setOrderSelection(null);setPendingOrderQuery(null);setResult({mode:'logout-success'});return;
     }
     if(conversation){
       const text=value.trim();
@@ -117,12 +118,12 @@ export default function App({toggleTheme,mode}) {
       setBusy(true);setResult(null);setOrderSelection(null);
       try{
         const orderIntent = intents.find(item => item.id === 'pedidos.consultar');
-        if(orderIntent?.requiresAuth && !checkoutToken){setResult({mode:'orders-auth',query});return;}
+        if(orderIntent?.requiresAuth && !checkoutToken){setPendingOrderQuery(query);setResult({mode:'orders-auth',query});return;}
         const url=new URL(import.meta.env.VITE_ORDER_QUERY_API_URL || 'https://us-central1-cirios-app.cloudfunctions.net/ibuiOrderQueryApi');
         if(query)url.searchParams.set('customer',query);
         const response=await fetch(url,{headers:{Authorization:'Bearer '+checkoutToken}});
         const data=await response.json();
-        if(response.status===401){setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');setResult({mode:'orders-auth',query});return;}
+        if(response.status===401){setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');setPendingOrderQuery(query);setResult({mode:'orders-auth',query});return;}
         if(!response.ok)throw new Error(response.status===403?'No tienes permiso para consultar pedidos.':data.error||'No se pudieron consultar los pedidos.');
         if(!Array.isArray(data.orders))throw new Error('Respuesta de pedidos inesperada.');
         setResult({mode:'orders',orders:data.orders,hasMore:Boolean(data.hasMore)});
@@ -167,7 +168,16 @@ export default function App({toggleTheme,mode}) {
       if(!response.ok||!data.idToken)throw new Error('No se pudo iniciar sesión. Comprueba tus credenciales.');
       setCheckoutToken(data.idToken);
       sessionStorage.setItem('ibui-auth',JSON.stringify({idToken:data.idToken,expiresAt:Date.now()+Number(data.expiresIn||3600)*1000}));
-      setLoginPassword('');setResult({mode:'login-success'});
+      setLoginPassword('');
+      if(pendingOrderQuery!==null){
+        const url=new URL(import.meta.env.VITE_ORDER_QUERY_API_URL || 'https://us-central1-cirios-app.cloudfunctions.net/ibuiOrderQueryApi');
+        if(pendingOrderQuery)url.searchParams.set('customer',pendingOrderQuery);
+        const ordersResponse=await fetch(url,{headers:{Authorization:'Bearer '+data.idToken}});
+        const payload=await ordersResponse.json();
+        if(!ordersResponse.ok)throw new Error(ordersResponse.status===403?'No tienes permiso para consultar pedidos.':payload.error||'No se pudieron consultar pedidos.');
+        if(!Array.isArray(payload.orders))throw new Error('Respuesta de pedidos inesperada.');
+        setPendingOrderQuery(null);setResult({mode:'orders',orders:payload.orders,hasMore:Boolean(payload.hasMore)});
+      }else setResult({mode:'login-success'});
     }catch(error){setCheckoutError(error.message||'No se pudo ingresar.');}
     finally{setBusy(false);}
   }
