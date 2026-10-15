@@ -28,3 +28,17 @@ test('unrelated commands do not resolve as session intents', () => {
     assert.equal(resolveSessionIntent(expression), null);
   }
 });
+
+test('authentication and permissions follow the agreed intent boundaries', () => {
+  const byId = Object.fromEntries(intents.map(intent => [intent.id, intent]));
+  assert.deepEqual(
+    { scope: byId['auth.ingresar'].scope, requiresAuth: byId['auth.ingresar'].requiresAuth },
+    { scope: 'universal', requiresAuth: false }
+  );
+  assert.equal(byId['auth.salir'].requiresAuth, true);
+  assert.equal(byId['catalogo.productos'].requiresAuth, false);
+  for (const id of ['pedidos.crear', 'pedidos.consultar']) {
+    assert.equal(byId[id].scope, 'admin');
+    assert.equal(byId[id].requiresAuth, true);
+  }
+});
