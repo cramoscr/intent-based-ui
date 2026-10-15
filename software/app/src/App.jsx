@@ -75,7 +75,7 @@ export default function App({toggleTheme,mode}) {
       const previous=conversation;
       const messages=[...previous.messages,{from:'user',text}];
       const reply=(next,message)=>setConversation({...next,messages:[...messages,{from:'assistant',text:message}]});
-      if(normalize(text)==='cancelar pedido'){setConversation(null);setIntent('');return;}
+      if(normalize(text)==='cancelar pedido'){setConversation(null);setResult(null);setIntent('');return;}
       if(previous.step==='customer'){
         reply({...previous,step:'product',customer:text},'¿Qué producto deseas agregar?');
       } else if(previous.step==='product'){
@@ -135,6 +135,7 @@ export default function App({toggleTheme,mode}) {
       return;
     }
     if(mode==='future'){
+      setResult(null);setOrderSelection(null);
       setBusy(true);
       try {
         const response=await fetch(import.meta.env.VITE_CATALOG_API_URL || 'https://us-central1-cirios-app.cloudfunctions.net/publicCatalogApi');
