@@ -35,13 +35,13 @@ function filterProducts(products, query) {
 }
 function ProductCard({product, panel, border, light}) {
   const [imageFailed,setImageFailed]=useState(false);
-  return <Box sx={{bgcolor:panel,border:'1px solid '+border,borderRadius:3,overflow:'hidden'}}>
-    <Box sx={{height:132,bgcolor:light?'#e3dccc':'#393939',display:'grid',placeItems:'center',color:'text.secondary',fontSize:12,overflow:'hidden'}}>
+  return <Box sx={{bgcolor:panel,border:'1px solid '+border,borderRadius:'8px',overflow:'hidden'}}>
+    <Box sx={{aspectRatio:'1 / 1',bgcolor:light?'#e3dccc':'#393939',display:'grid',placeItems:'center',color:'text.secondary',fontSize:12,overflow:'hidden'}}>
       {product.imageurl && !imageFailed
         ? <Box component="img" src={product.imageurl} alt={product.name} loading="lazy" onError={()=>setImageFailed(true)} sx={{width:'100%',height:'100%',objectFit:'contain'}}/>
         : 'Sin imagen'}
     </Box>
-    <Box sx={{p:2}}><Typography sx={{fontWeight:600}}>{product.name}</Typography><Typography sx={{mt:1,color:'text.secondary'}}>{money(product.price)}</Typography></Box>
+    <Box sx={{p:1.5}}><Typography sx={{fontWeight:600,fontSize:14,lineHeight:1.3}}>{product.name}</Typography><Typography sx={{mt:0.75,fontSize:13,color:'text.secondary'}}>{money(product.price)}</Typography></Box>
   </Box>;
 }
 export default function App({toggleTheme,mode}) {
