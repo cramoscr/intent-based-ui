@@ -60,6 +60,11 @@ export default function App({toggleTheme,mode}) {
   async function run(value) {
     if(busy)return;
     setIntent('');
+    // Cerrar sesión es global, incluso durante la creación de un pedido.
+    if(resolveSessionIntent(value)?.id==='auth.salir'){
+      setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');setLoginPassword('');setCheckoutError('');
+      setConversation(null);setOrderSelection(null);setResult({mode:'logout-success'});return;
+    }
     if(conversation){
       const text=value.trim();
       if(!text)return;
@@ -104,10 +109,6 @@ export default function App({toggleTheme,mode}) {
     const sessionIntent = resolveSessionIntent(value);
     if(sessionIntent?.id==='auth.ingresar'){
       setCheckoutError('');setResult({mode:checkoutToken?'login-success':'login'});return;
-    }
-    if(sessionIntent?.id==='auth.salir'){
-      setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');setLoginPassword('');setCheckoutError('');
-      setResult({mode:'logout-success'});return;
     }
     const {mode,query}=classify(value);
     if(mode==='home'){setResult(null);return;}
