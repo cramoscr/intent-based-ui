@@ -3,7 +3,7 @@ import { Box, Typography, TextField, Button, InputAdornment, IconButton, Fade, u
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import MicNoneRoundedIcon from '@mui/icons-material/MicNoneRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
-import { resolveSessionIntent } from './intentCatalog';
+import { intents, resolveSessionIntent } from './intentCatalog';
 
 const suggestions = ['Ver catálogo de productos', 'Crear pedido', 'Mostrar pedidos pendientes'];
 const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -116,7 +116,8 @@ export default function App({toggleTheme,mode}) {
     if(mode==='orders'){
       setBusy(true);setResult(null);setOrderSelection(null);
       try{
-        if(!checkoutToken){setResult({mode:'orders-auth',query});return;}
+        const orderIntent = intents.find(item => item.id === 'pedidos.consultar');
+        if(orderIntent?.requiresAuth && !checkoutToken){setResult({mode:'orders-auth',query});return;}
         const url=new URL(import.meta.env.VITE_ORDER_QUERY_API_URL || 'https://us-central1-cirios-app.cloudfunctions.net/ibuiOrderQueryApi');
         if(query)url.searchParams.set('customer',query);
         const response=await fetch(url,{headers:{Authorization:'Bearer '+checkoutToken}});
