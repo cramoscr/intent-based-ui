@@ -255,11 +255,8 @@ export default function App({toggleTheme,mode}) {
         {busy && <Box sx={{display:'flex',justifyContent:'center'}}><CircularProgress size={28}/></Box>}
         {result && <Box aria-live="polite">
           {result.mode==='error'?<Alert severity="warning">{result.message}</Alert>:result.mode==='login-success'?<Alert severity="success">Has ingresado al sistema. Ya puedes indicar otra intención.</Alert>:result.mode==='logout-success'?<Alert severity="success">Sesión cerrada correctamente.</Alert>:result.mode==='login'?<Box component="form" onSubmit={e=>{e.preventDefault();void signInGlobal();}} sx={{display:'grid',gap:1.5}}><TextField label="Correo electrónico" type="email" autoComplete="username" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/><TextField label="Contraseña" type="password" autoComplete="current-password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/>{checkoutError&&<Alert severity="error">{checkoutError}</Alert>}<Button type="submit" variant="contained" disabled={busy}>Ingresar</Button></Box>:result.mode==='orders-auth'?<Box sx={{display:'grid',gap:1.5}}>
-            <Typography>Inicia sesión como operador del taller para consultar pedidos.</Typography>
-            <TextField label="Correo de Cirios-App" type="email" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/>
-            <TextField label="Contraseña" type="password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/>
-            {checkoutError&&<Alert severity="error">{checkoutError}</Alert>}
-            <Button variant="contained" disabled={busy} onClick={()=>void signInForOrders()}>Consultar pedidos</Button>
+            <Typography>Para consultar pedidos necesitas ingresar al sistema.</Typography>
+            <Button variant="contained" onClick={()=>{setCheckoutError('');setResult({mode:'login'});}}>Ingresar</Button>
           </Box>:result.mode==='orders'?<Box sx={{display:'grid',gap:1.5}}>
             <Typography color="text.secondary">{result.orders.length? `Encontré ${result.orders.length} pedido(s).`:'No encontré pedidos pendientes para esta consulta.'}</Typography>
             {result.notice&&<Alert severity="info">{result.notice}</Alert>}
