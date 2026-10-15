@@ -66,6 +66,9 @@ export default function App({toggleTheme,mode}) {
       setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');setLoginPassword('');setCheckoutError('');
       setConversation(null);setOrderSelection(null);setPendingOrderQuery(null);setResult({mode:'logout-success'});return;
     }
+    if(conversation && resolveSessionIntent(value)?.id==='auth.ingresar'){
+      setCheckoutError('');setResult({mode:checkoutToken?'login-success':'login'});return;
+    }
     if(conversation){
       const text=value.trim();
       if(!text)return;
@@ -215,15 +218,8 @@ export default function App({toggleTheme,mode}) {
     if(!conversation||conversation.step!=='checkout'||!conversation.items.length||busy)return;
     setBusy(true);setCheckoutError('');
     try{
-      let token=checkoutToken;
-      if(!token){
-        if(!import.meta.env.VITE_FIREBASE_API_KEY)throw new Error('Falta configurar la clave web de Firebase.');
-        if(!loginEmail.trim()||!loginPassword)throw new Error('Introduce el correo y contraseña de tu cuenta de Cirios-App.');
-        const auth=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${import.meta.env.VITE_FIREBASE_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:loginEmail.trim(),password:loginPassword,returnSecureToken:true})});
-        const data=await auth.json();
-        if(!auth.ok||!data.idToken)throw new Error('No se pudo iniciar sesión. Comprueba tus credenciales.');
-        token=data.idToken;setCheckoutToken(token);sessionStorage.setItem('ibui-auth',JSON.stringify({idToken:token,expiresAt:Date.now()+Number(data.expiresIn||3600)*1000}));setLoginPassword('');
-      }
+      const token=checkoutToken;
+      if(!token)throw new Error('Ingresa al sistema antes de confirmar el pedido.');
       const response=await fetch('https://us-central1-cirios-app.cloudfunctions.net/ibuiCheckoutApi',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({customer:conversation.customer,committedDate:conversation.committedDate,items:conversation.items.map(x=>({productId:x.id,quantity:x.quantity}))})});
       const data=await response.json();
       if(!response.ok){if(response.status===401){setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');}throw new Error(data.error||'No se pudo registrar el pedido.');}
@@ -241,8 +237,8 @@ export default function App({toggleTheme,mode}) {
       <Box component="header" sx={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><Typography sx={{fontSize:{xs:22,sm:28},fontWeight:650,letterSpacing:'-.04em',cursor:'pointer'}} onClick={()=>{setResult(null);setConversation(null);setIntent('');}}>Mi Taller</Typography><IconButton onClick={toggleTheme} aria-label={light?'Activar tema oscuro':'Activar tema marfil'} title={light?'Tema oscuro':'Tema marfil'}><Typography fontSize={20}>{light?'☾':'☀'}</Typography></IconButton></Box>
       <Box component="main" sx={{flex:1,display:'flex',flexDirection:'column',justifyContent:showing?'flex-start':'center',gap:3,pb:'5vh',pt:showing?4:0}}>
         {!conversation && <Box component="form" onSubmit={e=>{e.preventDefault();void run(intent);}}><TextField fullWidth value={intent} onChange={e=>setIntent(e.target.value)} placeholder="Escribe o describe tu tarea..." inputProps={{'aria-label':'Describe tu tarea'}} InputProps={{startAdornment:<InputAdornment position="start"><SearchRoundedIcon sx={{color:'#999'}}/></InputAdornment>,endAdornment:<InputAdornment position="end"><IconButton disabled title="Voz pendiente de implementación" aria-label="Voz no disponible"><MicNoneRoundedIcon/></IconButton></InputAdornment>}} sx={{'& .MuiOutlinedInput-root':{borderRadius:'32px',minHeight:68,background:'transparent','& fieldset':{borderColor:border,borderWidth:2},'&:hover fieldset':{borderColor:light?'#918879':'#666'},'&.Mui-focused fieldset':{borderColor:light?'#6f675b':'#aaa'}},'& input':{fontSize:{xs:15,sm:19}},'& input::placeholder':{color:'#999',opacity:1}}}/></Box>}
-        <Typography component="h1" sx={{fontSize:{xs:showing?27:32,sm:showing?34:44},fontWeight:650,textAlign:showing?'left':'center',letterSpacing:'-.045em',lineHeight:1.15}}>{conversation?'Crear pedido':result?.mode==='login'?'Ingresar':result?.mode==='login-success'?'Sesión iniciada':result?.mode==='logout-success'?'Sesión cerrada':result?.mode?.startsWith('orders')?'Tus pedidos':showing?'Tu catálogo':'¿Qué quieres hacer?'}</Typography>
-        {conversation && <Box sx={{display:'grid',gap:2}}>
+        <Typography component="h1" sx={{fontSize:{xs:showing?27:32,sm:showing?34:44},fontWeight:650,textAlign:showing?'left':'center',letterSpacing:'-.045em',lineHeight:1.15}}>{result?.mode==='login'?'Ingresar':conversation?'Crear pedido':result?.mode==='login-success'?'Sesión iniciada':result?.mode==='logout-success'?'Sesión cerrada':result?.mode?.startsWith('orders')?'Tus pedidos':showing?'Tu catálogo':'¿Qué quieres hacer?'}</Typography>
+        {conversation && result?.mode!=='login' && <Box sx={{display:'grid',gap:2}}>
           <Box component="form" onSubmit={e=>{e.preventDefault();void run(intent);}}>
             <TextField fullWidth value={intent} onChange={e=>setIntent(e.target.value)} autoComplete="off" placeholder={conversation.step==='complete'?'Pedido registrado':'Escribe tu respuesta...'} disabled={busy||conversation.step==='complete'} inputProps={{'aria-label':'Comando para crear pedido'}} InputProps={{startAdornment:<InputAdornment position="start"><SearchRoundedIcon sx={{color:'#999'}}/></InputAdornment>}} sx={{'& .MuiOutlinedInput-root':{borderRadius:'32px',minHeight:68,'& fieldset':{borderColor:border,borderWidth:2}},'& input':{fontSize:{xs:15,sm:19}}}}/>
           </Box>
@@ -261,9 +257,9 @@ export default function App({toggleTheme,mode}) {
               <Typography sx={{fontSize:20,fontWeight:700}}>{money(conversation.items.reduce((sum,item)=>sum+Number(item.price||0)*item.quantity,0))}</Typography>
             </Box>
             {conversation.step==='checkout'&&<Box sx={{p:2.5,borderTop:'1px solid '+border,display:'grid',gap:1.5}}>
-              {!checkoutToken&&<><TextField label="Correo de Cirios-App" type="email" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/><TextField label="Contraseña" type="password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/></>}
+              {!checkoutToken&&<Typography sx={{fontSize:14}}>Ingresa al sistema para confirmar este pedido.</Typography>}
               {checkoutError&&<Alert severity="error">{checkoutError}</Alert>}
-              <Button variant="contained" disabled={busy} onClick={()=>void checkout()}>Confirmar pedido</Button>
+              {checkoutToken?<Button variant="contained" disabled={busy} onClick={()=>void checkout()}>Confirmar pedido</Button>:<Button variant="contained" disabled={busy} onClick={()=>{setCheckoutError('');setResult({mode:'login'});}}>Ingresar</Button>}
               <Typography sx={{fontSize:12,color:'text.secondary'}}>El pedido se guarda únicamente al confirmar.</Typography>
             </Box>}
           </Box>
