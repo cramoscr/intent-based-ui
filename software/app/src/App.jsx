@@ -35,16 +35,16 @@ function filterProducts(products, query) {
 }
 function ProductCard({product}) {
   const [imageFailed,setImageFailed]=useState(false);
-  return <Box sx={{bgcolor:'#303030',border:'1px solid #444',borderRadius:3,overflow:'hidden'}}>
+  return <Box sx={{bgcolor:panel,border:'1px solid '+border,borderRadius:3,overflow:'hidden'}}>
     <Box sx={{height:132,bgcolor:'#393939',display:'grid',placeItems:'center',color:'#aaa',fontSize:12,overflow:'hidden'}}>
       {product.imageurl && !imageFailed
         ? <Box component="img" src={product.imageurl} alt={product.name} loading="lazy" onError={()=>setImageFailed(true)} sx={{width:'100%',height:'100%',objectFit:'contain'}}/>
         : 'Sin imagen'}
     </Box>
-    <Box sx={{p:2}}><Typography sx={{fontWeight:600}}>{product.name}</Typography><Typography sx={{mt:1,color:'#ddd'}}>{money(product.price)}</Typography></Box>
+    <Box sx={{p:2}}><Typography sx={{fontWeight:600}}>{product.name}</Typography><Typography sx={{mt:1,color:'text.secondary'}}>{money(product.price)}</Typography></Box>
   </Box>;
 }
-export default function App() {
+export default function App({toggleTheme,mode}) {
   const [intent,setIntent]=useState('');
   const [result,setResult]=useState(null);
   const [busy,setBusy]=useState(false);
@@ -57,8 +57,8 @@ export default function App() {
   const [orderSelection,setOrderSelection]=useState(null);
   const reducedMotion=useMediaQuery('(prefers-reduced-motion: reduce)');
   async function run(value) {
-    setIntent(value);
     if(busy)return;
+    setIntent('');
     if(conversation){
       const text=value.trim();
       if(!text)return;
@@ -188,13 +188,18 @@ export default function App() {
     finally{setBusy(false);}
   }
   const showing=Boolean(result || conversation);
-  return <Box sx={{minHeight:'100dvh',bgcolor:'#111',display:'grid',placeItems:'center',p:{xs:0,sm:2}}}>
-    <Box sx={{width:'100%',maxWidth:720,minHeight:{xs:'100dvh',sm:'min(84dvh,760px)'},bgcolor:'#242424',borderRadius:{xs:0,sm:'36px'},px:{xs:2.5,sm:4},py:{xs:3.5,sm:4},display:'flex',flexDirection:'column'}}>
-      <Box component="header" sx={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><Typography sx={{fontSize:{xs:22,sm:28},fontWeight:650,letterSpacing:'-.04em',cursor:'pointer'}} onClick={()=>{setResult(null);setConversation(null);setIntent('');}}>Mi Taller</Typography><IconButton disabled aria-label="Menú no disponible"><MenuRoundedIcon/></IconButton></Box>
+  const light=mode==='light';
+  const surface=light?'#f8f4e9':'#242424';
+  const panel=light?'#eee8db':'#303030';
+  const border=light?'#c8c0b2':'#444';
+  return <Box sx={{minHeight:'100dvh',bgcolor:light?'#eee9dd':'#111',display:'grid',placeItems:'center',p:{xs:0,sm:2}}}>
+    <Box sx={{width:'100%',maxWidth:720,minHeight:{xs:'100dvh',sm:'min(84dvh,760px)'},bgcolor:surface,borderRadius:{xs:0,sm:'36px'},px:{xs:2.5,sm:4},py:{xs:3.5,sm:4},display:'flex',flexDirection:'column'}}>
+      <Box component="header" sx={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><Typography sx={{fontSize:{xs:22,sm:28},fontWeight:650,letterSpacing:'-.04em',cursor:'pointer'}} onClick={()=>{setResult(null);setConversation(null);setIntent('');}}>Mi Taller</Typography><IconButton onClick={toggleTheme} aria-label={light?'Activar tema oscuro':'Activar tema marfil'} title={light?'Tema oscuro':'Tema marfil'}><Typography fontSize={20}>{light?'☾':'☀'}</Typography></IconButton></Box>
       <Box component="main" sx={{flex:1,display:'flex',flexDirection:'column',justifyContent:showing?'flex-start':'center',gap:3,pb:'5vh',pt:showing?4:0}}>
-        <Box component="form" onSubmit={e=>{e.preventDefault();void run(intent);}}><TextField fullWidth value={intent} onChange={e=>setIntent(e.target.value)} placeholder="Escribe o describe tu tarea..." inputProps={{'aria-label':'Describe tu tarea'}} InputProps={{startAdornment:<InputAdornment position="start"><SearchRoundedIcon sx={{color:'#999'}}/></InputAdornment>,endAdornment:<InputAdornment position="end"><IconButton disabled title="Voz pendiente de implementación" aria-label="Voz no disponible"><MicNoneRoundedIcon/></IconButton></InputAdornment>}} sx={{'& .MuiOutlinedInput-root':{borderRadius:'32px',minHeight:68,background:'transparent','& fieldset':{borderColor:'#444',borderWidth:2},'&:hover fieldset':{borderColor:'#666'},'&.Mui-focused fieldset':{borderColor:'#aaa'}},'& input':{fontSize:{xs:15,sm:19}},'& input::placeholder':{color:'#999',opacity:1}}}/></Box>
+        {!conversation && <Box component="form" onSubmit={e=>{e.preventDefault();void run(intent);}}><TextField fullWidth value={intent} onChange={e=>setIntent(e.target.value)} placeholder="Escribe o describe tu tarea..." inputProps={{'aria-label':'Describe tu tarea'}} InputProps={{startAdornment:<InputAdornment position="start"><SearchRoundedIcon sx={{color:'#999'}}/></InputAdornment>,endAdornment:<InputAdornment position="end"><IconButton disabled title="Voz pendiente de implementación" aria-label="Voz no disponible"><MicNoneRoundedIcon/></IconButton></InputAdornment>}} sx={{'& .MuiOutlinedInput-root':{borderRadius:'32px',minHeight:68,background:'transparent','& fieldset':{borderColor:border,borderWidth:2},'&:hover fieldset':{borderColor:light?'#918879':'#666'},'&.Mui-focused fieldset':{borderColor:light?'#6f675b':'#aaa'}},'& input':{fontSize:{xs:15,sm:19}},'& input::placeholder':{color:'#999',opacity:1}}}/></Box>}
         <Typography component="h1" sx={{fontSize:{xs:showing?27:32,sm:showing?34:44},fontWeight:650,textAlign:showing?'left':'center',letterSpacing:'-.045em',lineHeight:1.15}}>{conversation?'Crear pedido':result?.mode?.startsWith('orders')?'Tus pedidos':showing?'Tu catálogo':'¿Qué quieres hacer?'}</Typography>
         {conversation && <Box aria-live="polite" sx={{display:'grid',gap:1.5}}>{conversation.messages.map((message,index)=><Box key={index} sx={{justifySelf:message.from==='user'?'end':'start',bgcolor:message.from==='user'?'#3c3c3c':'#303030',px:2,py:1.5,borderRadius:3,maxWidth:'90%'}}><Typography>{message.text}</Typography></Box>)}<Box sx={{bgcolor:'#303030',p:2,borderRadius:2,display:'grid',gap:1}}><Typography fontWeight={600}>Carrito temporal · {conversation.items.length} producto(s)</Typography>{conversation.items.map((item,index)=><Typography key={index} sx={{fontSize:14}}>{item.quantity} × {item.name} — {money(Number(item.price||0)*item.quantity)}</Typography>)}{conversation.items.length>0&&<Typography fontWeight={600}>Total estimado: {money(conversation.items.reduce((sum,item)=>sum+Number(item.price||0)*item.quantity,0))}</Typography>}<Typography color="text.secondary" sx={{fontSize:12}}>{conversation.step==='complete'?'Pedido registrado':'Carrito temporal · se pierde al recargar'}</Typography>{conversation.step==='checkout'&&<Box sx={{display:'grid',gap:1.5,mt:1}}>{!checkoutToken&&<><TextField label="Correo de Cirios-App" type="email" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/><TextField label="Contraseña" type="password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/></>}{checkoutError&&<Alert severity="error">{checkoutError}</Alert>}<Button variant="contained" disabled={busy} onClick={()=>void checkout()}>Confirmar pedido</Button><Typography color="text.secondary" sx={{fontSize:12}}>Tu sesión se conserva durante esta pestaña. El pedido se guarda únicamente al confirmar.</Typography></Box>}</Box></Box>}
+        {conversation && conversation.step!=='complete' && <Box component="form" onSubmit={e=>{e.preventDefault();void run(intent);}} sx={{mt:'auto',position:'sticky',bottom:0,bgcolor:surface,py:2,zIndex:1}}><TextField fullWidth autoComplete="off" value={intent} onChange={e=>setIntent(e.target.value)} placeholder="Responde o escribe una instrucción..." inputProps={{'aria-label':'Respuesta del pedido'}} disabled={busy} size="medium"/></Box>}
         {busy && <Box sx={{display:'flex',justifyContent:'center'}}><CircularProgress size={28}/></Box>}
         {result && <Box aria-live="polite">
           {result.mode==='error'?<Alert severity="warning">{result.message}</Alert>:result.mode==='orders-auth'?<Box sx={{display:'grid',gap:1.5}}>
@@ -214,13 +219,13 @@ export default function App() {
             </Box>)}
             {result.hasMore&&<Typography color="text.secondary" sx={{fontSize:13}}>Hay más pedidos. Refina la consulta por cliente.</Typography>}
           </Box>:result.mode==='future'?<Typography color="text.secondary">Crear pedidos estará disponible próximamente.</Typography>:<>
-            <Typography sx={{color:'#bbb',mb:2}}>{result.products.length ? `Encontré ${result.products.length} producto(s).` : 'No encontré productos para esta búsqueda.'}</Typography>
-            {result.mode==='list' ? <Box sx={{display:'grid',gap:1}}>{result.products.map(p=><Box key={p.id} sx={{display:'flex',justifyContent:'space-between',gap:2,p:1.5,borderBottom:'1px solid #444'}}><Typography>{p.name}</Typography><Typography sx={{whiteSpace:'nowrap',color:'#ccc'}}>{money(p.price)}</Typography></Box>)}</Box>
+            <Typography sx={{color:'text.secondary',mb:2}}>{result.products.length ? `Encontré ${result.products.length} producto(s).` : 'No encontré productos para esta búsqueda.'}</Typography>
+            {result.mode==='list' ? <Box sx={{display:'grid',gap:1}}>{result.products.map(p=><Box key={p.id} sx={{display:'flex',justifyContent:'space-between',gap:2,p:1.5,borderBottom:'1px solid '+border}}><Typography>{p.name}</Typography><Typography sx={{whiteSpace:'nowrap',color:'text.secondary'}}>{money(p.price)}</Typography></Box>)}</Box>
             : result.mode==='compare' ? <Box sx={{overflowX:'auto'}}><Box component="table" sx={{width:'100%',borderCollapse:'collapse','& td,& th':{p:1,textAlign:'left',borderBottom:'1px solid #444'}}}><thead><tr><th>Producto</th><th>Precio</th></tr></thead><tbody>{result.products.map(p=><tr key={p.id}><td>{p.name}</td><td>{money(p.price)}</td></tr>)}</tbody></Box></Box>
             : <Box sx={{display:'grid',gridTemplateColumns:result.mode==='detail'?'1fr':{xs:'repeat(2,minmax(0,1fr))',sm:'repeat(3,minmax(0,1fr))'},gap:1.5}}>{result.products.map(p=><ProductCard key={p.id} product={p}/>)}</Box>}
           </>}
         </Box>}
-        {!showing && <Box role="group" aria-label="Intenciones sugeridas" sx={{display:'flex',flexWrap:'wrap',justifyContent:'center',gap:1.5}}>{suggestions.map((label,index)=><Fade in timeout={reducedMotion?0:480} style={{transitionDelay:reducedMotion?'0ms':(240+index*200)+'ms'}} key={label}><Button onClick={()=>{void run(label);}} variant="text" sx={{color:'#f5f5f5',bgcolor:'#303030',borderRadius:99,textTransform:'none',px:2.5,py:1.5,fontSize:{xs:14,sm:17},'&:hover':{bgcolor:'#3b3b3b'}}}>{label}</Button></Fade>)}</Box>}
+        {!showing && <Box role="group" aria-label="Intenciones sugeridas" sx={{display:'flex',flexWrap:'wrap',justifyContent:'center',gap:1.5}}>{suggestions.map((label,index)=><Fade in timeout={reducedMotion?0:480} style={{transitionDelay:reducedMotion?'0ms':(240+index*200)+'ms'}} key={label}><Button onClick={()=>{void run(label);}} variant="text" sx={{color:'text.primary',bgcolor:'#303030',borderRadius:99,textTransform:'none',px:2.5,py:1.5,fontSize:{xs:14,sm:17},'&:hover':{bgcolor:'#3b3b3b'}}}>{label}</Button></Fade>)}</Box>}
       </Box>
     </Box>
   </Box>;
