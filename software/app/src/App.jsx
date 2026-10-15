@@ -3,6 +3,7 @@ import { Box, Typography, TextField, Button, InputAdornment, IconButton, Fade, u
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import MicNoneRoundedIcon from '@mui/icons-material/MicNoneRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
+import { resolveSessionIntent } from './intentCatalog';
 
 const suggestions = ['Ver catálogo de productos', 'Crear pedido', 'Mostrar pedidos pendientes'];
 const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -100,7 +101,14 @@ export default function App({toggleTheme,mode}) {
       setResult(previous=>({...previous,notice:'Ese pedido no aparece en los resultados actuales.'}));
       setIntent('');return;
     }
-    if(/^(ingresar|ingresar al sistema|iniciar sesi[oó]n|login)$/i.test(value.trim())){setCheckoutError('');setResult({mode:'login'});return;}
+    const sessionIntent = resolveSessionIntent(value);
+    if(sessionIntent?.id==='auth.ingresar'){
+      setCheckoutError('');setResult({mode:checkoutToken?'login-success':'login'});return;
+    }
+    if(sessionIntent?.id==='auth.salir'){
+      setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');setLoginPassword('');setCheckoutError('');
+      setResult({mode:'logout-success'});return;
+    }
     const {mode,query}=classify(value);
     if(mode==='home'){setResult(null);return;}
     if(mode==='unsupportedRecent'){setResult({mode:'error',message:'La consulta de pedidos recientes todavía no está disponible. Consulta pedidos pendientes o por cliente.'});setIntent('');return;}
@@ -213,7 +221,7 @@ export default function App({toggleTheme,mode}) {
       <Box component="header" sx={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><Typography sx={{fontSize:{xs:22,sm:28},fontWeight:650,letterSpacing:'-.04em',cursor:'pointer'}} onClick={()=>{setResult(null);setConversation(null);setIntent('');}}>Mi Taller</Typography><IconButton onClick={toggleTheme} aria-label={light?'Activar tema oscuro':'Activar tema marfil'} title={light?'Tema oscuro':'Tema marfil'}><Typography fontSize={20}>{light?'☾':'☀'}</Typography></IconButton></Box>
       <Box component="main" sx={{flex:1,display:'flex',flexDirection:'column',justifyContent:showing?'flex-start':'center',gap:3,pb:'5vh',pt:showing?4:0}}>
         {!conversation && <Box component="form" onSubmit={e=>{e.preventDefault();void run(intent);}}><TextField fullWidth value={intent} onChange={e=>setIntent(e.target.value)} placeholder="Escribe o describe tu tarea..." inputProps={{'aria-label':'Describe tu tarea'}} InputProps={{startAdornment:<InputAdornment position="start"><SearchRoundedIcon sx={{color:'#999'}}/></InputAdornment>,endAdornment:<InputAdornment position="end"><IconButton disabled title="Voz pendiente de implementación" aria-label="Voz no disponible"><MicNoneRoundedIcon/></IconButton></InputAdornment>}} sx={{'& .MuiOutlinedInput-root':{borderRadius:'32px',minHeight:68,background:'transparent','& fieldset':{borderColor:border,borderWidth:2},'&:hover fieldset':{borderColor:light?'#918879':'#666'},'&.Mui-focused fieldset':{borderColor:light?'#6f675b':'#aaa'}},'& input':{fontSize:{xs:15,sm:19}},'& input::placeholder':{color:'#999',opacity:1}}}/></Box>}
-        <Typography component="h1" sx={{fontSize:{xs:showing?27:32,sm:showing?34:44},fontWeight:650,textAlign:showing?'left':'center',letterSpacing:'-.045em',lineHeight:1.15}}>{conversation?'Crear pedido':result?.mode==='login'?'Ingresar':result?.mode==='login-success'?'Sesión iniciada':result?.mode?.startsWith('orders')?'Tus pedidos':showing?'Tu catálogo':'¿Qué quieres hacer?'}</Typography>
+        <Typography component="h1" sx={{fontSize:{xs:showing?27:32,sm:showing?34:44},fontWeight:650,textAlign:showing?'left':'center',letterSpacing:'-.045em',lineHeight:1.15}}>{conversation?'Crear pedido':result?.mode==='login'?'Ingresar':result?.mode==='login-success'?'Sesión iniciada':result?.mode==='logout-success'?'Sesión cerrada':result?.mode?.startsWith('orders')?'Tus pedidos':showing?'Tu catálogo':'¿Qué quieres hacer?'}</Typography>
         {conversation && <Box sx={{display:'grid',gap:2}}>
           <Box component="form" onSubmit={e=>{e.preventDefault();void run(intent);}}>
             <TextField fullWidth value={intent} onChange={e=>setIntent(e.target.value)} autoComplete="off" placeholder={conversation.step==='complete'?'Pedido registrado':'Escribe tu respuesta...'} disabled={busy||conversation.step==='complete'} inputProps={{'aria-label':'Comando para crear pedido'}} InputProps={{startAdornment:<InputAdornment position="start"><SearchRoundedIcon sx={{color:'#999'}}/></InputAdornment>}} sx={{'& .MuiOutlinedInput-root':{borderRadius:'32px',minHeight:68,'& fieldset':{borderColor:border,borderWidth:2}},'& input':{fontSize:{xs:15,sm:19}}}}/>
@@ -244,7 +252,7 @@ export default function App({toggleTheme,mode}) {
         </Box>}
         {busy && <Box sx={{display:'flex',justifyContent:'center'}}><CircularProgress size={28}/></Box>}
         {result && <Box aria-live="polite">
-          {result.mode==='error'?<Alert severity="warning">{result.message}</Alert>:result.mode==='login-success'?<Alert severity="success">Has ingresado al sistema. Ya puedes indicar otra intención.</Alert>:result.mode==='login'?<Box component="form" onSubmit={e=>{e.preventDefault();void signInGlobal();}} sx={{display:'grid',gap:1.5}}><TextField label="Correo electrónico" type="email" autoComplete="username" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/><TextField label="Contraseña" type="password" autoComplete="current-password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/>{checkoutError&&<Alert severity="error">{checkoutError}</Alert>}<Button type="submit" variant="contained" disabled={busy}>Ingresar</Button></Box>:result.mode==='orders-auth'?<Box sx={{display:'grid',gap:1.5}}>
+          {result.mode==='error'?<Alert severity="warning">{result.message}</Alert>:result.mode==='login-success'?<Alert severity="success">Has ingresado al sistema. Ya puedes indicar otra intención.</Alert>:result.mode==='logout-success'?<Alert severity="success">Sesión cerrada correctamente.</Alert>:result.mode==='login'?<Box component="form" onSubmit={e=>{e.preventDefault();void signInGlobal();}} sx={{display:'grid',gap:1.5}}><TextField label="Correo electrónico" type="email" autoComplete="username" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/><TextField label="Contraseña" type="password" autoComplete="current-password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/>{checkoutError&&<Alert severity="error">{checkoutError}</Alert>}<Button type="submit" variant="contained" disabled={busy}>Ingresar</Button></Box>:result.mode==='orders-auth'?<Box sx={{display:'grid',gap:1.5}}>
             <Typography>Inicia sesión como operador del taller para consultar pedidos.</Typography>
             <TextField label="Correo de Cirios-App" type="email" size="small" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)}/>
             <TextField label="Contraseña" type="password" size="small" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)}/>
