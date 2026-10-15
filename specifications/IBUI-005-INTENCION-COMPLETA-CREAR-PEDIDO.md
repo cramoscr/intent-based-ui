@@ -105,3 +105,21 @@ Los nombres del ejemplo son texto de entrada, **no prueban que existan registros
 ## Publicación
 
 La documentación no autoriza despliegue. Publicar código únicamente ante instrucción explícita del usuario: **«publica en producción»**.
+
+## Frontera de identidad y autorización (acuerdo 2026-10-15)
+
+**Principio arquitectónico aprobado:** la interpretación y ejecución de una intención depende de la identidad y el contexto de autorización del actor. Una misma interfaz adaptativa puede servir a visitantes, clientes registrados y administradores, pero sus capacidades y datos accesibles son distintos.
+
+**Modelo:** Intención + Contexto + Identidad + Autorización → Acción.
+
+- **Visitante:** consulta de información pública, como catálogo, sin login obligatorio.
+- **Cliente registrado:** operaciones sobre sus propios pedidos y datos, sujeto a permisos verificados en backend. Su experiencia autenticada queda para un entregable posterior.
+- **Administrador del taller (Jenny):** puede crear pedidos para clientes y consultar información del taller según los permisos reales. IBUI-005 prioriza este camino.
+- **Autenticación progresiva:** solicitar login al llegar a una operación protegida; no forzarlo en la pantalla inicial para intenciones públicas.
+- **Autorización en servidor:** nunca confiar en el rol indicado por el navegador, ni exponer el directorio de clientes mediante API pública.
+- **Resolución de clientes:** la API existente `customerApi` de Cirios-App está restringida a cuenta de servicio; no debe abrirse al público. Para IBUI-005, evaluar un endpoint de consulta mínima autenticado para administradores, reutilizando la verificación de token y permiso `isAdmin` del checkout/consulta de pedidos. Devolver únicamente los candidatos necesarios para desambiguación.
+- **Checkout:** mantener la confirmación explícita y las validaciones de servidor existentes. No crear pedido antes de la confirmación.
+
+**Límite de alcance:** no implementar en IBUI-005 un portal completo de clientes, registro de cuentas ni un sistema genérico de roles. Se conserva una sola interfaz adaptativa y se resuelve primero la operación administrativa.
+
+**Estado de este acuerdo:** arquitectura documentada; implementación, pruebas y despliegue pendientes.
