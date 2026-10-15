@@ -178,7 +178,11 @@ export default function App({toggleTheme,mode}) {
           setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');
           throw new Error('La sesión no fue aceptada por pedidos. Ingresa nuevamente.');
         }
-        if(!ordersResponse.ok)throw new Error(ordersResponse.status===403?'No tienes permiso para consultar pedidos.':payload.error||'No se pudieron consultar pedidos.');
+        if(ordersResponse.status===403){
+          setPendingOrderQuery(null);
+          throw new Error('Tu cuenta no tiene permiso para consultar pedidos.');
+        }
+        if(!ordersResponse.ok)throw new Error(payload.error||'No se pudieron consultar pedidos.');
         if(!Array.isArray(payload.orders))throw new Error('Respuesta de pedidos inesperada.');
         setPendingOrderQuery(null);setResult({mode:'orders',orders:payload.orders,hasMore:Boolean(payload.hasMore)});
       }else setResult({mode:'login-success'});
