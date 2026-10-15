@@ -8,3 +8,5 @@ Requires: verify destination site exists, workflow successful, authentication an
 Retry: 2026-10-14, new Hosting site fabricamelo-app confirmed created in Firebase Console by user screenshot; retry previously authorized production release.
 
 Release request: 2026-10-14 — authorized by user. Deploy theme toggle, automatic command clearing, and bottom input for order chat. Build check success on 6c56a8a.
+
+Release request: 2026-10-14 — user explicitly authorized production deployment of hybrid create-order card and square product catalog cards. Source commit 537345738bc2ac180a0921e4cf54ae6bcae96209.
