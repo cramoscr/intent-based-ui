@@ -1,0 +1,45 @@
+name: IBUI Build Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'software/app/**'
+      - '.github/workflows/ibui-build-check.yml'
+  pull_request:
+    paths:
+      - 'software/app/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: software/app/package-lock.json
+      - name: Install dependencies
+        working-directory: software/app
+        run: npm ci
+      - name: Compile application
+        working-directory: software/app
+        run: npm run build
+      - name: Publish build status
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          STATE="failure"
+          if [ "$JOB_STATUS" = "success" ]; then STATE="success"; fi
+          gh api --method POST "repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            -f state="$STATE" \
+            -f context="IBUI Build Check" \
+            -f description="Build $STATE"
