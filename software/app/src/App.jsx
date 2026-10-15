@@ -174,6 +174,10 @@ export default function App({toggleTheme,mode}) {
         if(pendingOrderQuery)url.searchParams.set('customer',pendingOrderQuery);
         const ordersResponse=await fetch(url,{headers:{Authorization:'Bearer '+data.idToken}});
         const payload=await ordersResponse.json();
+        if(ordersResponse.status===401){
+          setCheckoutToken(null);sessionStorage.removeItem('ibui-auth');
+          throw new Error('La sesión no fue aceptada por pedidos. Ingresa nuevamente.');
+        }
         if(!ordersResponse.ok)throw new Error(ordersResponse.status===403?'No tienes permiso para consultar pedidos.':payload.error||'No se pudieron consultar pedidos.');
         if(!Array.isArray(payload.orders))throw new Error('Respuesta de pedidos inesperada.');
         setPendingOrderQuery(null);setResult({mode:'orders',orders:payload.orders,hasMore:Boolean(payload.hasMore)});
