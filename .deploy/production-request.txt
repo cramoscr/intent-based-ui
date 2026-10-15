@@ -12,3 +12,5 @@ Release request: 2026-10-14 — authorized by user. Deploy theme toggle, automat
 Release request: 2026-10-14 — user explicitly authorized production deployment of hybrid create-order card and square product catalog cards. Source commit 537345738bc2ac180a0921e4cf54ae6bcae96209.
 
 Release request: 2026-10-15 — user explicitly authorized 'publica en produccion'. Deploy global login and pending order-query changes through commit ac47ae60e79df9b231b1385c13324e98d5c1509d. Build check success. Verify Hosting CD result before claiming success.
+
+Release request: 2026-10-15 — explicitly authorized production deployment of create-order/catalog view isolation fix, source commit 83784a2dd1ecbba188f8aab35e517b24935c117f. Verify Hosting CD success before claiming publication.
